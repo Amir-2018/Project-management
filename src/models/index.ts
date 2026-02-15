@@ -5,6 +5,23 @@ export interface User {
   avatar?: string;
 }
 
+// Member model interface
+export interface Member {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar?: string;
+}
+
+// Team model interface
+export interface Team {
+  id: string;
+  name: string;
+  members: Member[];
+  projectIds: number[];
+}
+
 // Project model interface
 export interface Project {
   id: number;
@@ -15,7 +32,7 @@ export interface Project {
   startDate?: string;
   endDate?: string;
   description?: string;
-  teamMembers?: string[];
+  memberIds?: string[];
 }
 
 // Project status enum
