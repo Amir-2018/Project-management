@@ -40,6 +40,22 @@ export const useTeamController = () => {
         refreshData();
     }, [refreshData]);
 
+    const addMember = useCallback((member: Omit<Member, 'id'>) => {
+        const nm = teamService.addMember(member);
+        refreshData();
+        return nm;
+    }, [refreshData]);
+
+    const updateMember = useCallback((memberId: string, updates: Partial<Member>) => {
+        teamService.updateMember(memberId, updates);
+        refreshData();
+    }, [refreshData]);
+
+    const deleteMember = useCallback((memberId: string) => {
+        teamService.deleteMember(memberId);
+        refreshData();
+    }, [refreshData]);
+
     return {
         teams,
         members,
@@ -48,6 +64,9 @@ export const useTeamController = () => {
         updateTeam,
         assignMember,
         removeMember,
+        addMember,
+        updateMember,
+        deleteMember,
         refreshTeams: refreshData
     };
 };

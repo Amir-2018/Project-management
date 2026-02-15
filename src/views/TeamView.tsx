@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Users, Trash2, Plus, X, UserPlus, Briefcase, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Team, Member, Project } from '../models';
 import { STATUS_COLORS } from '../constants';
 
@@ -22,6 +23,7 @@ const TeamView: React.FC<TeamViewProps> = ({
     onAssignMember,
     onRemoveMember
 }) => {
+    const { t } = useTranslation();
     const [newTeamName, setNewTeamName] = useState('');
     const [showAddTeam, setShowAddTeam] = useState(false);
 
@@ -36,11 +38,9 @@ const TeamView: React.FC<TeamViewProps> = ({
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-2 animate-in fade-in duration-500">
             <div className="flex justify-between items-end">
                 <div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Teams & Members</h2>
-                    <p className="text-slate-400 font-medium text-sm">Manage your teams and project allocations.</p>
                 </div>
             </div>
 
@@ -51,7 +51,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                         type="text"
                         value={newTeamName}
                         onChange={(e) => setNewTeamName(e.target.value)}
-                        placeholder="Enter team name (e.g., Marketing, HR)"
+                        placeholder={t('team.team_name_placeholder')}
                         className="flex-1 px-6 py-4 rounded-2xl border border-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all font-medium"
                     />
                     <button
@@ -64,7 +64,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                         }}
                         className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 hover:scale-105 transition-all shadow-lg shadow-indigo-200"
                     >
-                        Create Team
+                        {t('team.create_team')}
                     </button>
                     <button
                         onClick={() => setShowAddTeam(false)}
@@ -82,7 +82,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                             <div>
                                 <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">{team.name} Team</h3>
                                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-                                    <Users className="w-3 h-3" /> {team.members.length} Members
+                                    <Users className="w-3 h-3" /> {team.members.length} {t('team.members')}
                                 </p>
                             </div>
                             <button
@@ -96,7 +96,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                         <div className="p-8 space-y-8 flex-1">
                             <div>
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                                    <Briefcase className="w-3 h-3" /> Allocated Projects
+                                    <Briefcase className="w-3 h-3" /> {t('team.allocated_projects')}
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
                                     {getProjectsForTeam(team.projectIds).map(project => (
@@ -108,7 +108,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                                         </div>
                                     ))}
                                     {team.projectIds.length === 0 && (
-                                        <p className="text-xs text-slate-300 italic font-medium">No projects assigned</p>
+                                        <p className="text-xs text-slate-300 italic font-medium">{t('team.no_projects')}</p>
                                     )}
                                 </div>
                             </div>
@@ -116,7 +116,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                             <div>
                                 <div className="flex justify-between items-center mb-6">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <UserPlus className="w-3 h-3" /> Team Members
+                                        <UserPlus className="w-3 h-3" /> {t('team.team_members')}
                                     </h4>
                                     <div className="relative">
                                         <select
@@ -128,7 +128,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                                                 }
                                             }}
                                         >
-                                            <option value="">+ Add Member</option>
+                                            <option value="">{t('team.add_member')}</option>
                                             {members.filter(m => !team.members.some(tm => tm.id === m.id)).map(m => (
                                                 <option key={m.id} value={m.id}>{m.name}</option>
                                             ))}
@@ -157,7 +157,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                                         </div>
                                     ))}
                                     {team.members.length === 0 && (
-                                        <p className="text-xs text-slate-300 italic font-medium">No members in this team</p>
+                                        <p className="text-xs text-slate-300 italic font-medium">{t('team.no_members_team')}</p>
                                     )}
                                 </div>
                             </div>

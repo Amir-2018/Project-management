@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Layout, Users, BarChart3, LogOut, Plus, X, Calendar, Edit2, Trash2, CheckCircle2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Layout, Users, BarChart3, LogOut, Plus, X, Calendar, Edit2, Trash2, CheckCircle2, ChevronDown, Globe, Briefcase } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useProjectController, useTaskController, useTeamController } from '../controllers';
 import { APP_NAME, STATUS_COLORS } from '../constants';
@@ -7,9 +8,11 @@ import { Project, ProjectStatus, Task, Member } from '../models';
 import ProjectsView from './ProjectsView';
 import TasksView from './TasksView';
 import TeamView from './TeamView';
+import MembersView from './MembersView';
 import StatisticsView from './StatisticsView';
 import CreateTaskModal from './CreateTaskModal';
 
+// Modal component for managing project (Create/Edit)
 // Modal component for managing project (Create/Edit)
 const ProjectModal: React.FC<{
   isOpen: boolean;
@@ -24,6 +27,7 @@ const ProjectModal: React.FC<{
   initialData,
   members
 }) => {
+    const { t } = useTranslation();
     const [name, setName] = useState(initialData?.name || '');
     const [description, setDescription] = useState(initialData?.description || '');
     const [status, setStatus] = useState<ProjectStatus>(initialData?.status || 'Planning');
@@ -49,50 +53,50 @@ const ProjectModal: React.FC<{
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in duration-200 text-left">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-800">{initialData ? 'Edit Project' : 'Create New Project'}</h3>
+            <h3 className="text-xl font-bold text-gray-800">{initialData ? t('modals.project.edit') : t('modals.project.create')}</h3>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl transition-colors">&times;</button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-sm font-semibold text-gray-700">Project Name</label>
+              <label className="text-sm font-semibold text-gray-700">{t('modals.project.name')}</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
                 className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
-                placeholder="Enter project name"
+                placeholder={t('modals.project.name_placeholder')}
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-semibold text-gray-700">Description</label>
+              <label className="text-sm font-semibold text-gray-700">{t('modals.project.description')}</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
                 className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
-                placeholder="Enter project description"
+                placeholder={t('modals.project.description_placeholder')}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-gray-700">Status</label>
+                <label className="text-sm font-semibold text-gray-700">{t('modals.project.status')}</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as ProjectStatus)}
                   className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
                 >
-                  <option value="Planning">Planning</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
+                  <option value="Planning">{t('tasks.todo')}</option>
+                  <option value="In Progress">{t('tasks.in_progress')}</option>
+                  <option value="Completed">{t('tasks.done')}</option>
                   <option value="On Hold">On Hold</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-gray-700">Due Date</label>
+                <label className="text-sm font-semibold text-gray-700">{t('modals.project.due_date')}</label>
                 <input
                   type="date"
                   value={dueDate}
@@ -104,7 +108,7 @@ const ProjectModal: React.FC<{
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-semibold text-gray-700">Assign Members</label>
+              <label className="text-sm font-semibold text-gray-700">{t('modals.project.assign_members')}</label>
               <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto p-2 border border-gray-100 rounded-xl">
                 {members.map(member => (
                   <label key={member.id} className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
@@ -132,13 +136,13 @@ const ProjectModal: React.FC<{
                 onClick={onClose}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
               >
-                Cancel
+                {t('modals.task.cancel')}
               </button>
               <button
                 type="submit"
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-lg"
               >
-                {initialData ? 'Update Project' : 'Create Project'}
+                {initialData ? t('modals.project.update_button') : t('modals.project.create')}
               </button>
             </div>
           </form>
@@ -148,15 +152,16 @@ const ProjectModal: React.FC<{
   };
 
 // Sidebar component
-const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void; onLogout: () => void }> = ({
+const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void }> = ({
   activeTab,
-  setActiveTab,
-  onLogout
+  setActiveTab
 }) => {
+  const { t } = useTranslation();
   const navItems = [
-    { id: 'projects', icon: <Layout className="w-5 h-5" />, label: 'Projects' },
-    { id: 'team', icon: <Users className="w-5 h-5" />, label: 'Team' },
-    { id: 'statistics', icon: <BarChart3 className="w-5 h-5" />, label: 'Statistique' },
+    { id: 'projects', icon: <Layout className="w-5 h-5" />, label: t('common.projects') },
+    { id: 'members', icon: <Users className="w-5 h-5" />, label: t('common.members') },
+    { id: 'team', icon: <Globe className="w-5 h-5" />, label: t('common.team') },
+    { id: 'statistics', icon: <BarChart3 className="w-5 h-5" />, label: t('common.statistics') },
   ];
 
   return (
@@ -180,28 +185,31 @@ const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void
           </button>
         ))}
       </nav>
-      <div className="p-4 border-t border-white/10">
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-white/5 hover:bg-red-500 transition-all duration-300 w-full text-left group"
-        >
-          <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-          <span className="tracking-wide uppercase text-xs font-black text-white/70 group-hover:text-white">Logout</span>
-        </button>
-      </div>
     </aside>
   );
 };
 
 // Dashboard View component
 const DashboardView: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const { allProjects, addProject, updateProject, deleteProject } = useProjectController();
-  const { teams, members, addTeam, deleteTeam, assignMember, removeMember } = useTeamController();
+  const {
+    teams,
+    members,
+    addTeam,
+    deleteTeam,
+    assignMember,
+    removeMember,
+    addMember,
+    updateMember,
+    deleteMember
+  } = useTeamController();
   const {
     tasks,
     addTask,
     updateTaskStatus,
+    updateTask,
     addComment,
     addAttachment
   } = useTaskController();
@@ -211,6 +219,23 @@ const DashboardView: React.FC = () => {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    setIsProfileOpen(false);
+  };
 
   const handleProjectSubmit = (projectData: Omit<Project, 'id'>) => {
     if (editingProject) {
@@ -245,21 +270,70 @@ const DashboardView: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={logout} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <main className="flex-1 ml-64 p-12">
         <header className="flex justify-between items-center mb-12">
           <div>
-            <h1 className="text-4xl font-black text-slate-800 tracking-tight capitalize">{activeTab}</h1>
-            <p className="text-slate-400 font-medium mt-1">Empowering your collaborative workflow.</p>
+            <h1 className="text-4xl font-black text-slate-800 tracking-tight capitalize">{t(`common.${activeTab}`)}</h1>
+            <p className="text-slate-400 font-medium mt-1">{t('dashboard.empowering')}</p>
           </div>
-          <div className="flex items-center gap-4 bg-white p-2 pr-6 rounded-2xl shadow-sm border border-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl font-black border-4 border-indigo-50 shadow-inner">
-              {user?.username?.charAt(0).toUpperCase()}
-            </div>
-            <div className="text-left">
-              <div className="text-sm font-black text-slate-800 tracking-tight">{user?.username}</div>
-            </div>
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className="flex items-center gap-4 bg-white p-2 pr-4 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl font-black border-4 border-indigo-50 shadow-inner group-hover:scale-105 transition-transform">
+                {user?.username?.charAt(0).toUpperCase()}
+              </div>
+              <div className="text-left">
+                <div className="text-sm font-black text-slate-800 tracking-tight">{user?.username}</div>
+                <div className="text-[10px] font-black text-indigo-500 uppercase tracking-widest leading-none mt-1">Superadmin</div>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isProfileOpen && (
+              <div className="absolute right-0 mt-3 w-64 bg-white rounded-[2rem] shadow-2xl border border-slate-100 py-4 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
+                <div className="px-6 py-4 border-b border-slate-50">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Language</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => changeLanguage('en')}
+                      className={`flex-1 py-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${i18n.language.startsWith('en') ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                    >
+                      <span className="text-lg">🇬🇧</span>
+                      <span className="text-[10px] font-black uppercase">EN</span>
+                    </button>
+                    <button
+                      onClick={() => changeLanguage('fr')}
+                      className={`flex-1 py-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${i18n.language.startsWith('fr') ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                    >
+                      <span className="text-lg">🇫🇷</span>
+                      <span className="text-[10px] font-black uppercase">FR</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="p-2">
+                  <button className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-all group">
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-white transition-colors">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-wide">{t('common.profile')}</span>
+                  </button>
+                  <div className="h-px bg-slate-50 mx-4 my-2"></div>
+                  <button
+                    onClick={logout}
+                    className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl hover:bg-red-50 text-red-500 transition-all group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center group-hover:bg-white transition-colors">
+                      <LogOut className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-wide">{t('common.logout')}</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
@@ -279,6 +353,7 @@ const DashboardView: React.FC = () => {
               tasks={tasks.filter(t => t.projectId === selectedProjectId)}
               onAddTask={() => setIsTaskModalOpen(true)}
               onUpdateStatus={updateTaskStatus}
+              onUpdateTask={updateTask}
               onAddComment={(taskId, text) => addComment(taskId, user?.username || 'user', user?.username || 'User', text)}
               onAddAttachment={(taskId, file) => addAttachment(taskId, {
                 name: file.name,
@@ -299,6 +374,19 @@ const DashboardView: React.FC = () => {
               onDeleteTeam={deleteTeam}
               onAssignMember={assignMember}
               onRemoveMember={removeMember}
+            />
+          )}
+
+          {activeTab === 'members' && (
+            <MembersView
+              members={members}
+              teams={teams}
+              projects={allProjects}
+              onAddMember={addMember}
+              onUpdateMember={updateMember}
+              onDeleteMember={deleteMember}
+              onAssignToTeam={assignMember}
+              onRemoveFromTeam={removeMember}
             />
           )}
 
@@ -338,6 +426,10 @@ const DashboardView: React.FC = () => {
             setIsProjectModalOpen(true);
           } else if (activeTab === 'tasks') {
             setIsTaskModalOpen(true);
+          } else if (activeTab === 'members') {
+            // Trigger add member modal in MembersView if needed, or we can just let MembersView handle its own button.
+            // But for consistency with the FAB:
+            window.dispatchEvent(new CustomEvent('trigger-add-member'));
           } else if (activeTab === 'team') {
             window.dispatchEvent(new CustomEvent('trigger-add-team'));
           }

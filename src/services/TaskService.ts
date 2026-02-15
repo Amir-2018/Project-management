@@ -117,6 +117,15 @@ class TaskService {
         }
     }
 
+    public updateTask(taskId: string, updates: Partial<Task>): void {
+        const tasks = this.getTasks();
+        const index = tasks.findIndex(t => t.id === taskId);
+        if (index !== -1) {
+            tasks[index] = { ...tasks[index], ...updates };
+            this.saveTasks(tasks);
+        }
+    }
+
     public deleteTask(taskId: string): void {
         const tasks = this.getTasks();
         const filtered = tasks.filter(t => t.id !== taskId);

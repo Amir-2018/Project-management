@@ -12,6 +12,7 @@ export interface Member {
   email: string;
   role: string;
   avatar?: string;
+  managerId?: string;
 }
 
 // Team model interface

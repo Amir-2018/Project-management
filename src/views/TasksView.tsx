@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, MoreVertical, MessageSquare, Paperclip, Plus, Layout } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Task, TaskStatus } from '../models';
 import TaskDetailModal from './TaskDetailModal';
 
@@ -7,6 +8,7 @@ interface TasksViewProps {
     tasks: Task[];
     onAddTask: () => void;
     onUpdateStatus: (taskId: string, status: TaskStatus) => void;
+    onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
     onAddComment: (taskId: string, text: string) => void;
     onAddAttachment: (taskId: string, file: File) => void;
     onBack: () => void;
@@ -16,15 +18,27 @@ const TasksView: React.FC<TasksViewProps> = ({
     tasks,
     onAddTask,
     onUpdateStatus,
+    onUpdateTask,
     onAddComment,
     onAddAttachment,
     onBack
 }) => {
+    const { t } = useTranslation();
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
     const [dropTargetStatus, setDropTargetStatus] = useState<TaskStatus | null>(null);
 
     const columns: TaskStatus[] = ['To Do', 'In Progress', 'Done', 'Finished'];
+
+    const getStatusKey = (status: TaskStatus) => {
+        switch (status) {
+            case 'To Do': return 'tasks.todo';
+            case 'In Progress': return 'tasks.in_progress';
+            case 'Done': return 'tasks.done';
+            case 'Finished': return 'tasks.finished';
+            default: return status;
+        }
+    };
 
     const getTasksByStatus = (status: TaskStatus) => tasks.filter(t => t.status === status);
 
@@ -65,13 +79,13 @@ const TasksView: React.FC<TasksViewProps> = ({
                     <button
                         onClick={onBack}
                         className="p-2 hover:bg-indigo-50 rounded-full transition-all text-indigo-600 group"
-                        title="Back to Projects"
+                        title={t('tasks.back')}
                     >
                         <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
                     </button>
                     <div>
-                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">Board</h2>
-                        <p className="text-slate-400 font-medium text-sm">Visualize and manage tasks for this project.</p>
+                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">{t('tasks.board')}</h2>
+                        <p className="text-slate-400 font-medium text-sm">{t('tasks.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -89,7 +103,7 @@ const TasksView: React.FC<TasksViewProps> = ({
                         >
                             <div className="flex justify-between items-center mb-6 px-2">
                                 <div className="flex items-center gap-3">
-                                    <h3 className="font-black text-slate-800 text-sm uppercase tracking-widest">{status}</h3>
+                                    <h3 className="font-black text-slate-800 text-sm uppercase tracking-widest">{t(getStatusKey(status))}</h3>
                                     <span className="bg-white px-3 py-1 rounded-full text-[10px] font-black text-indigo-600 shadow-sm">
                                         {getTasksByStatus(status).length}
                                     </span>
@@ -116,6 +130,16 @@ const TasksView: React.FC<TasksViewProps> = ({
                                                 }`}>
                                                 {task.priority}
                                             </span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedTask(task);
+                                                }}
+                                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-slate-100 rounded-lg transition-all text-slate-400 hover:text-indigo-600"
+                                                title={t('tasks.edit')}
+                                            >
+                                                <MoreVertical className="w-3.5 h-3.5" />
+                                            </button>
                                         </div>
                                         <h4 className="font-black text-slate-800 mb-2 group-hover:text-indigo-600 transition-colors tracking-tight uppercase text-sm">{task.title}</h4>
                                         <p className="text-xs text-slate-400 line-clamp-2 mb-4 leading-relaxed font-medium">{task.description}</p>
@@ -148,7 +172,7 @@ const TasksView: React.FC<TasksViewProps> = ({
                                     onClick={onAddTask}
                                     className="w-full py-4 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Plus className="w-4 h-4" /> Add New Task
+                                    <Plus className="w-4 h-4" /> {t('tasks.add_new')}
                                 </button>
                             </div>
                         </div>
@@ -156,17 +180,20 @@ const TasksView: React.FC<TasksViewProps> = ({
                 </div>
             </div>
 
-            {selectedTask && (
-                <TaskDetailModal
-                    task={selectedTask}
-                    isOpen={!!selectedTask}
-                    onClose={() => setSelectedTask(null)}
-                    onAddComment={(text) => onAddComment(selectedTask.id, text)}
-                    onAddAttachment={(file) => onAddAttachment(selectedTask.id, file)}
-                    onUpdateStatus={(status) => onUpdateStatus(selectedTask.id, status)}
-                />
-            )}
-        </div>
+            {
+                selectedTask && (
+                    <TaskDetailModal
+                        task={selectedTask}
+                        isOpen={!!selectedTask}
+                        onClose={() => setSelectedTask(null)}
+                        onAddComment={(text) => onAddComment(selectedTask.id, text)}
+                        onAddAttachment={(file) => onAddAttachment(selectedTask.id, file)}
+                        onUpdateStatus={(status) => onUpdateStatus(selectedTask.id, status)}
+                        onUpdateTask={(updates) => onUpdateTask(selectedTask.id, updates)}
+                    />
+                )
+            }
+        </div >
     );
 };
 

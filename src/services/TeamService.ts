@@ -21,10 +21,11 @@ class TeamService {
         const stored = localStorage.getItem(this.MEMBERS_KEY);
         if (!stored) {
             const initialMembers: Member[] = [
-                { id: 'm1', name: 'Amir', email: 'amir@example.com', role: 'Full Stack Developer' },
-                { id: 'm2', name: 'Sarah', email: 'sarah@example.com', role: 'UI/UX Designer' },
-                { id: 'm3', name: 'John', email: 'john@example.com', role: 'Backend Engineer' },
-                { id: 'm4', name: 'Elena', email: 'elena@example.com', role: 'Project Manager' }
+                { id: 'm1', name: 'Amir', email: 'amir@example.com', role: 'Director', managerId: undefined },
+                { id: 'm2', name: 'Sarah', email: 'sarah@example.com', role: 'Head of Product', managerId: 'm1' },
+                { id: 'm3', name: 'John', email: 'john@example.com', role: 'Engineering Manager', managerId: 'm1' },
+                { id: 'm4', name: 'Elena', email: 'elena@example.com', role: 'Senior Designer', managerId: 'm2' },
+                { id: 'm5', name: 'Dev', email: 'dev@example.com', role: 'Full Stack Developer', managerId: 'm3' }
             ];
             this.saveMembers(initialMembers);
             return initialMembers;
@@ -96,6 +97,48 @@ class TeamService {
             teams[index].members = teams[index].members.filter(m => m.id !== memberId);
             this.saveTeams(teams);
         }
+    }
+
+    public addMember(member: Omit<Member, 'id'>): Member {
+        const members = this.getMembers();
+        const newMember: Member = {
+            ...member,
+            id: Math.random().toString(36).substr(2, 9)
+        };
+        members.push(newMember);
+        this.saveMembers(members);
+        return newMember;
+    }
+
+    public updateMember(memberId: string, updates: Partial<Member>): void {
+        const members = this.getMembers();
+        const index = members.findIndex(m => m.id === memberId);
+        if (index !== -1) {
+            members[index] = { ...members[index], ...updates };
+            this.saveMembers(members);
+
+            // Also update member info in teams
+            const teams = this.getTeams();
+            teams.forEach(team => {
+                const memberIndex = team.members.findIndex(m => m.id === memberId);
+                if (memberIndex !== -1) {
+                    team.members[memberIndex] = { ...team.members[memberIndex], ...updates };
+                }
+            });
+            this.saveTeams(teams);
+        }
+    }
+
+    public deleteMember(memberId: string): void {
+        const members = this.getMembers();
+        this.saveMembers(members.filter(m => m.id !== memberId));
+
+        // Also remove member from teams
+        const teams = this.getTeams();
+        teams.forEach(team => {
+            team.members = team.members.filter(m => m.id !== memberId);
+        });
+        this.saveTeams(teams);
     }
 }
 

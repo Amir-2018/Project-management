@@ -1,0 +1,131 @@
+{
+    "common": {
+        "projects": "Projects",
+        "team": "Team",
+        "statistics": "Statistics",
+        "members": "Members",
+        "logout": "Logout",
+        "profile": "Profile"
+    },
+    "sidebar": {
+        "nav_main": "Main Navigation"
+    },
+    "dashboard": {
+        "title": "Strategy Board",
+        "subtitle": "High-level overview of your project ecosystem."
+    },
+    "projects": {
+        "title": "Project Collections",
+        "subtitle": "Visualize and manage your ongoing workstreams.",
+        "identification": "Identification",
+        "status": "Status",
+        "progress": "Advancement",
+        "deadline": "Deadline",
+        "operations": "Operations",
+        "no_description": "No description provided."
+    },
+    "tasks": {
+        "board": "Board",
+        "subtitle": "Visualize and manage tasks for this project.",
+        "add_new": "Add New Task",
+        "todo": "To Do",
+        "in_progress": "In Progress",
+        "done": "Done",
+        "finished": "Finished",
+        "milestones": "Milestones",
+        "due": "Due",
+        "back": "Back to Projects",
+        "edit": "Edit Task"
+    },
+    "team": {
+        "title": "Teams & Members",
+        "subtitle": "Manage your teams and project allocations.",
+        "create_team": "Create Team",
+        "team_name_placeholder": "Enter team name (e.g., Marketing, HR)",
+        "members": "Members",
+        "allocated_projects": "Allocated Projects",
+        "no_projects": "No projects assigned",
+        "team_members": "Team Members",
+        "add_member": "+ Add Member",
+        "no_members_team": "No members in this team"
+    },
+    "members": {
+        "title": "Member Management",
+        "subtitle": "Directory of all project participants and their assignments.",
+        "add_new": "Add New Member",
+        "identification": "Identification",
+        "contact": "Contact",
+        "role": "Role",
+        "assignments": "Assignments",
+        "edit": "Edit Member",
+        "delete": "Delete Member",
+        "name_placeholder": "Enter full name",
+        "role_placeholder": "Enter role (e.g. Developer)",
+        "email_placeholder": "Enter email address",
+        "update_button": "Update Member",
+        "create_button": "Create Member",
+        "manager": "Manager",
+        "reports_to": "Reports to",
+        "team_assignment": "Team Assignment",
+        "project_management": "Project Management"
+    },
+    "statistics": {
+        "title": "Business Intelligence",
+        "subtitle": "Comprehensive performance analytics and workstream health.",
+        "active_projects": "Active Projects",
+        "avg_progress": "Avg. Progress",
+        "tasks_completed": "Tasks Completed",
+        "team_velocity": "Team Velocity",
+        "monthly_performance": "Monthly Performance",
+        "trends": "Project and Task completion trends",
+        "weekly_velocity": "Weekly Velocity",
+        "velocity_subtitle": "Task completion rate throughout the week",
+        "this_week": "This Week",
+        "last_week": "Last Week",
+        "strategic_insights": "Strategic Insights",
+        "efficiency_matrix": "Efficiency Matrix",
+        "efficiency_description": "Your team is currently operating at <0>92% efficiency</0>. The \"Marketing\" team has the highest velocity this month, having cleared 14 project milestones.",
+        "avg_lead_time": "Avg. Lead Time",
+        "vs_last_month": "Vs Last Month"
+    },
+    "modals": {
+        "project": {
+            "edit": "Edit Project",
+            "create": "Create New Project",
+            "name": "Project Name",
+            "name_placeholder": "Enter project name",
+            "description": "Description",
+            "description_placeholder": "Enter project description",
+            "status": "Status",
+            "due_date": "Due Date",
+            "assign_members": "Assign Members",
+            "update_button": "Update Project"
+        },
+        "task": {
+            "create": "New Task",
+            "create_subtitle": "Create a milestone",
+            "title": "Task Title",
+            "title_placeholder": "What needs to be done?",
+            "description": "Description",
+            "description_placeholder": "Add more details...",
+            "priority": "Priority",
+            "status": "Status",
+            "assign_to": "Assign To",
+            "unassigned": "Unassigned",
+            "cancel": "Cancel",
+            "create_button": "Create Task"
+        },
+        "detail": {
+            "priority_suffix": "Priority",
+            "description": "Description",
+            "attachments": "Attachments",
+            "drop_files": "Drop files here",
+            "browse": "or browse from computer",
+            "activity": "Activity",
+            "no_activity": "No activity yet",
+            "placeholder": "Write a message...",
+            "post": "Post Comment",
+            "save_changes": "Save Changes"
+        }
+    }
+}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Layout, List, Edit2, Trash2, Calendar, MoreVertical, Grid } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Project } from '../models';
 import { STATUS_COLORS } from '../constants';
 
@@ -18,14 +19,13 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({
     onEditProject,
     onDeleteProject
 }) => {
+    const { t } = useTranslation();
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex justify-between items-end">
                 <div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Project Collections</h2>
-                    <p className="text-slate-400 font-medium text-sm">Visualize and manage your ongoing workstreams.</p>
                 </div>
                 <div className="flex items-center gap-6">
                     <div className="flex bg-slate-200/50 p-1.5 rounded-2xl border border-slate-100 shadow-inner">
@@ -78,12 +78,12 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({
                             </div>
 
                             <p onClick={() => onProjectClick(project.id)} className="text-slate-500 text-sm mb-8 line-clamp-3 flex-1 cursor-pointer font-medium leading-relaxed">
-                                {project.description || 'No description provided.'}
+                                {project.description || t('projects.no_description')}
                             </p>
 
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <span>Milestones</span>
+                                    <span>{t('tasks.milestones')}</span>
                                     <span className="text-slate-800">{project.progress}%</span>
                                 </div>
                                 <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5 shadow-inner">
@@ -108,7 +108,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({
                                     )}
                                 </div>
                                 <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
-                                    <Calendar className="w-3 h-3" /> Due <span className="text-slate-800 ml-1">{project.dueDate}</span>
+                                    <Calendar className="w-3 h-3" /> {t('tasks.due')} <span className="text-slate-800 ml-1">{project.dueDate}</span>
                                 </div>
                             </div>
                         </div>
@@ -119,11 +119,11 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Identification</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Advancement</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Deadline</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Operations</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('projects.identification')}</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('projects.status')}</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('projects.progress')}</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('projects.deadline')}</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t('projects.operations')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -134,7 +134,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 >
                                     <td onClick={() => onProjectClick(project.id)} className="px-8 py-6 cursor-pointer">
                                         <div className="text-sm font-black text-slate-800 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{project.name}</div>
-                                        <div className="text-[10px] text-slate-400 mt-1 font-medium italic line-clamp-1">{project.description || 'No description'}</div>
+                                        <div className="text-[10px] text-slate-400 mt-1 font-medium italic line-clamp-1">{project.description || t('projects.no_description')}</div>
                                     </td>
                                     <td className="px-8 py-6">
                                         <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${STATUS_COLORS[project.status]}`}>

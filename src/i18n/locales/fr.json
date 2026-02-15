@@ -1,0 +1,131 @@
+{
+    "common": {
+        "projects": "Projets",
+        "team": "Équipe",
+        "statistics": "Statistiques",
+        "members": "Membres",
+        "logout": "Déconnexion",
+        "profile": "Profil"
+    },
+    "sidebar": {
+        "nav_main": "Navigation Principale"
+    },
+    "dashboard": {
+        "title": "Tableau de Stratégie",
+        "subtitle": "Aperçu de haut niveau de votre écosystème de projets."
+    },
+    "projects": {
+        "title": "Collections de Projets",
+        "subtitle": "Visualisez et gérez vos flux de travail en cours.",
+        "identification": "Identification",
+        "status": "Statut",
+        "progress": "Avancement",
+        "deadline": "Échéance",
+        "operations": "Opérations",
+        "no_description": "Aucune description fournie."
+    },
+    "tasks": {
+        "board": "Tableau",
+        "subtitle": "Visualisez et gérez les tâches de ce projet.",
+        "add_new": "Ajouter Nouvelle Tâche",
+        "todo": "À Faire",
+        "in_progress": "En Cours",
+        "done": "Fait",
+        "finished": "Terminé",
+        "milestones": "Jalons",
+        "due": "Échéance",
+        "back": "Retour aux Projets",
+        "edit": "Modifier la Tâche"
+    },
+    "team": {
+        "title": "Équipes & Membres",
+        "subtitle": "Gérez vos équipes et les allocations de projets.",
+        "create_team": "Créer l'Équipe",
+        "team_name_placeholder": "Entrez le nom de l'équipe (ex: Marketing, RH)",
+        "members": "Membres",
+        "allocated_projects": "Projets Alloués",
+        "no_projects": "Aucun projet assigné",
+        "team_members": "Membres de l'Équipe",
+        "add_member": "+ Ajouter Membre",
+        "no_members_team": "Aucun membre dans cette équipe"
+    },
+    "members": {
+        "title": "Gestion des Membres",
+        "subtitle": "Annuaire de tous les participants au projet et leurs affectations.",
+        "add_new": "Ajouter Nouveau Membre",
+        "identification": "Identification",
+        "contact": "Contact",
+        "role": "Rôle",
+        "assignments": "Affectations",
+        "edit": "Modifier le Membre",
+        "delete": "Supprimer le Membre",
+        "name_placeholder": "Entrez le nom complet",
+        "role_placeholder": "Entrez le rôle (ex: Développeur)",
+        "email_placeholder": "Entrez l'adresse e-mail",
+        "update_button": "Modifier le Membre",
+        "create_button": "Créer le Membre",
+        "manager": "Manager",
+        "reports_to": "Rapporte à",
+        "team_assignment": "Affectation d'Équipe",
+        "project_management": "Gestion de Projet"
+    },
+    "statistics": {
+        "title": "Intelligence d'Affaires",
+        "subtitle": "Analyses de performance complètes et santé du flux de travail.",
+        "active_projects": "Projets Actifs",
+        "avg_progress": "Progression Moy.",
+        "tasks_completed": "Tâches Terminées",
+        "team_velocity": "Vélocité d'Équipe",
+        "monthly_performance": "Performance Mensuelle",
+        "trends": "Tendances de réalisation des projets et des tâches",
+        "weekly_velocity": "Vélocité Hebdomadaire",
+        "velocity_subtitle": "Taux de réalisation des tâches tout au long de la semaine",
+        "this_week": "Cette Semaine",
+        "last_week": "La Semaine Dernière",
+        "strategic_insights": "Aperçus Stratégiques",
+        "efficiency_matrix": "Matrice d'Efficacité",
+        "efficiency_description": "Votre équipe fonctionne actuellement à <0>92% d'efficacité</0>. L'équipe \"Marketing\" a la vélocité la plus élevée ce mois-ci, ayant franchi 14 jalons de projet.",
+        "avg_lead_time": "Temps d'Attente Moyen",
+        "vs_last_month": "Vs Le Mois Dernier"
+    },
+    "modals": {
+        "project": {
+            "edit": "Modifier le Projet",
+            "create": "Créer Nouveau Projet",
+            "name": "Nom du Projet",
+            "name_placeholder": "Entrez le nom du projet",
+            "description": "Description",
+            "description_placeholder": "Entrez la description du projet",
+            "status": "Statut",
+            "due_date": "Date d'Échéance",
+            "assign_members": "Assigner des Membres",
+            "update_button": "Modifier le Projet"
+        },
+        "task": {
+            "create": "Nouvelle Tâche",
+            "create_subtitle": "Créer un jalon",
+            "title": "Titre de la Tâche",
+            "title_placeholder": "Que faut-il faire ?",
+            "description": "Description",
+            "description_placeholder": "Ajoutez plus de détails...",
+            "priority": "Priorité",
+            "status": "Statut",
+            "assign_to": "Assigner à",
+            "unassigned": "Non assigné",
+            "cancel": "Annuler",
+            "create_button": "Créer la Tâche"
+        },
+        "detail": {
+            "priority_suffix": "Priorité",
+            "description": "Description",
+            "attachments": "Pièces Jointes",
+            "drop_files": "Déposez les fichiers ici",
+            "browse": "ou parcourez depuis l'ordinateur",
+            "activity": "Activité",
+            "no_activity": "Aucune activité pour le moment",
+            "placeholder": "Écrire un message...",
+            "post": "Publier",
+            "save_changes": "Enregistrer les modifications"
+        }
+    }
+}

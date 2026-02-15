@@ -40,6 +40,11 @@ export const useTaskController = (projectId?: number) => {
         fetchTasks();
     };
 
+    const updateTask = (taskId: string, updates: Partial<Task>) => {
+        taskService.updateTask(taskId, updates);
+        fetchTasks();
+    };
+
     const deleteTask = (taskId: string) => {
         taskService.deleteTask(taskId);
         fetchTasks();
@@ -50,6 +55,7 @@ export const useTaskController = (projectId?: number) => {
         loading,
         addTask,
         updateTaskStatus,
+        updateTask,
         addComment,
         addAttachment,
         deleteTask,

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Layout, TrendingUp, CheckCircle2, Zap, BarChart3, Calendar } from 'lucide-react';
+import { useTranslation, Trans } from 'react-i18next';
 import { Project, Task } from '../models';
 
 interface StatisticsViewProps {
@@ -8,6 +9,7 @@ interface StatisticsViewProps {
 }
 
 const StatisticsView: React.FC<StatisticsViewProps> = ({ projects, tasks }) => {
+    const { t } = useTranslation();
     // Mock performance data for charts (since real historical data isn't in service yet)
     const monthlyData = [
         { name: 'Jan', projects: 2, tasks: 12 },
@@ -45,10 +47,10 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ projects, tasks }) => {
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: 'Active Projects', value: stats.totalProjects, icon: <Layout className="w-6 h-6" />, color: 'bg-indigo-500' },
-                    { label: 'Avg. Progress', value: `${stats.avgProgress}%`, icon: <TrendingUp className="w-6 h-6" />, color: 'bg-emerald-500' },
-                    { label: 'Tasks Completed', value: stats.doneTasks, icon: <CheckCircle2 className="w-6 h-6" />, color: 'bg-amber-500' },
-                    { label: 'Team Velocity', value: '8.4', icon: <Zap className="w-6 h-6" />, color: 'bg-purple-500' }
+                    { label: t('statistics.active_projects'), value: stats.totalProjects, icon: <Layout className="w-6 h-6" />, color: 'bg-indigo-500' },
+                    { label: t('statistics.avg_progress'), value: `${stats.avgProgress}%`, icon: <TrendingUp className="w-6 h-6" />, color: 'bg-emerald-500' },
+                    { label: t('statistics.tasks_completed'), value: stats.doneTasks, icon: <CheckCircle2 className="w-6 h-6" />, color: 'bg-amber-500' },
+                    { label: t('statistics.team_velocity'), value: '8.4', icon: <Zap className="w-6 h-6" />, color: 'bg-purple-500' }
                 ].map((item, i) => (
                     <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-xl transition-all">
                         <div className={`w-14 h-14 ${item.color} text-white rounded-2xl flex items-center justify-center shadow-lg ring-4 ring-white`}>
@@ -67,17 +69,17 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ projects, tasks }) => {
                 <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
                     <div className="flex justify-between items-center mb-10">
                         <div>
-                            <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Monthly Performance</h3>
-                            <p className="text-slate-400 text-xs font-medium">Project and Task completion trends</p>
+                            <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">{t('statistics.monthly_performance')}</h3>
+                            <p className="text-slate-400 text-xs font-medium">{t('statistics.trends')}</p>
                         </div>
                         <div className="flex gap-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                                <span className="text-[10px] font-black text-slate-400 uppercase">Projects</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase">{t('common.projects')}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-indigo-200"></div>
-                                <span className="text-[10px] font-black text-slate-400 uppercase">Milestones</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase">{t('tasks.milestones')}</span>
                             </div>
                         </div>
                     </div>
@@ -105,12 +107,12 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ projects, tasks }) => {
                 <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
                     <div className="flex justify-between items-center mb-10">
                         <div>
-                            <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Weekly Velocity</h3>
-                            <p className="text-slate-400 text-xs font-medium">Task completion rate throughout the week</p>
+                            <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">{t('statistics.weekly_velocity')}</h3>
+                            <p className="text-slate-400 text-xs font-medium">{t('statistics.velocity_subtitle')}</p>
                         </div>
                         <select className="bg-slate-50 border-none outline-none text-[10px] font-black text-slate-500 uppercase tracking-widest p-2 rounded-xl">
-                            <option>This Week</option>
-                            <option>Last Week</option>
+                            <option>{t('statistics.this_week')}</option>
+                            <option>{t('statistics.last_week')}</option>
                         </select>
                     </div>
 
@@ -175,29 +177,31 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ projects, tasks }) => {
 
                 <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-12">
                     <div className="max-w-md">
-                        <span className="text-indigo-400 text-xs font-black uppercase tracking-[0.2em] mb-4 block">Strategic Insights</span>
-                        <h3 className="text-4xl font-black tracking-tight mb-6">Efficiency Matrix</h3>
+                        <span className="text-indigo-400 text-xs font-black uppercase tracking-[0.2em] mb-4 block">{t('statistics.strategic_insights')}</span>
+                        <h3 className="text-4xl font-black tracking-tight mb-6">{t('statistics.efficiency_matrix')}</h3>
                         <p className="text-slate-400 font-medium leading-relaxed">
-                            Your team is currently operating at <span className="text-white">92% efficiency</span>. The "Marketing" team has the highest velocity this month, having cleared 14 project milestones.
+                            <Trans i18nKey="statistics.efficiency_description">
+                                Your team is currently operating at <span className="text-white">92% efficiency</span>. The "Marketing" team has the highest velocity this month, having cleared 14 project milestones.
+                            </Trans>
                         </p>
                         <div className="mt-8 flex gap-8">
                             <div>
                                 <div className="text-3xl font-black">2.4d</div>
-                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Avg. Lead Time</div>
+                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">{t('statistics.avg_lead_time')}</div>
                             </div>
                             <div className="w-px h-12 bg-slate-800"></div>
                             <div>
                                 <div className="text-3xl font-black">+18%</div>
-                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Vs Last Month</div>
+                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">{t('statistics.vs_last_month')}</div>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex gap-4">
                         {[
-                            { label: 'Planning', value: 45, color: 'bg-amber-500' },
-                            { label: 'In Progress', value: 75, color: 'bg-indigo-500' },
-                            { label: 'Done', value: 40, color: 'bg-emerald-500' }
+                            { label: t('tasks.todo'), value: 45, color: 'bg-amber-500' },
+                            { label: t('tasks.in_progress'), value: 75, color: 'bg-indigo-500' },
+                            { label: t('tasks.done'), value: 40, color: 'bg-emerald-500' }
                         ].map((item, i) => (
                             <div key={i} className="bg-slate-800/50 backdrop-blur-md p-8 rounded-3xl border border-slate-700/50 flex flex-col items-center gap-6 w-32 group hover:bg-slate-800 transition-all">
                                 <div className="relative w-16 h-16 flex items-center justify-center">
