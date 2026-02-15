@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useProjectController } from '../controllers';
 import { APP_NAME, STATUS_COLORS } from '../constants';
-import { Project, ProjectStatus } from '../models';
+import { Project, ProjectStatus, Task, TaskStatus } from '../models';
+import { useTaskController } from '../controllers';
+import ProjectsView from './ProjectsView';
+import TasksView from './TasksView';
 
 // Modal component for creating new project
-const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSubmit: (project: Omit<Project, 'id'>) => void }> = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit 
+const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSubmit: (project: Omit<Project, 'id'>) => void }> = ({
+  isOpen,
+  onClose,
+  onSubmit
 }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -46,7 +49,7 @@ const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSub
           <h3 className="text-xl font-bold text-gray-800">Create New Project</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
@@ -59,7 +62,7 @@ const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSub
               placeholder="Enter project name"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
@@ -70,7 +73,7 @@ const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSub
               placeholder="Enter project description"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select
@@ -84,7 +87,7 @@ const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSub
               <option value="On Hold">On Hold</option>
             </select>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
@@ -105,7 +108,7 @@ const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSub
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
             <input
@@ -115,7 +118,7 @@ const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSub
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
-          
+
           <div className="flex gap-3 pt-4">
             <button
               type="button"
@@ -138,15 +141,14 @@ const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSub
 };
 
 // Sidebar component
-const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void; onLogout: () => void }> = ({ 
-  activeTab, 
-  setActiveTab, 
-  onLogout 
+const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void; onLogout: () => void }> = ({
+  activeTab,
+  setActiveTab,
+  onLogout
 }) => {
   const navItems = [
     { id: 'overview', icon: '📊', label: 'Overview' },
     { id: 'projects', icon: '📁', label: 'Projects' },
-    { id: 'tasks', icon: '✅', label: 'Tasks' },
     { id: 'team', icon: '👥', label: 'Team' },
     { id: 'settings', icon: '⚙️', label: 'Settings' },
   ];
@@ -161,11 +163,10 @@ const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${
-              activeTab === item.id 
-                ? 'bg-white/20 font-semibold' 
-                : 'hover:bg-white/10 text-white/80'
-            }`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${activeTab === item.id
+              ? 'bg-white/20 font-semibold'
+              : 'hover:bg-white/10 text-white/80'
+              }`}
           >
             <span className="text-lg">{item.icon}</span>
             {item.label}
@@ -173,7 +174,7 @@ const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void
         ))}
       </nav>
       <div className="p-4 border-t border-white/10">
-        <button 
+        <button
           onClick={onLogout}
           className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 hover:bg-red-500/80 transition-all duration-200 w-full text-left"
         >
@@ -210,7 +211,7 @@ const ProjectRow: React.FC<{ project: Project }> = ({ project }) => (
     <td className="py-4 px-4">
       <div className="flex items-center gap-2">
         <div className="w-28 h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-indigo-500 to-pink-500 rounded-full transition-all duration-300"
             style={{ width: `${project.progress}%` }}
           />
@@ -226,12 +227,55 @@ const ProjectRow: React.FC<{ project: Project }> = ({ project }) => (
 const DashboardView: React.FC = () => {
   const { user, logout } = useAuth();
   const { stats, allProjects, addProject } = useProjectController();
+  const {
+    tasks,
+    addTask,
+    updateTaskStatus,
+    addComment,
+    addAttachment
+  } = useTaskController();
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddProject = (project: Omit<Project, 'id'>) => {
     addProject(project);
     setIsModalOpen(false);
+  };
+
+  const handleAddTask = () => {
+    const title = prompt('Enter task title:');
+    if (title && selectedProjectId) {
+      addTask({
+        projectId: selectedProjectId,
+        title,
+        description: 'New task description...',
+        status: 'To Do',
+        priority: 'Medium',
+        assignee: user?.username || 'Dev',
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      });
+    }
+  };
+
+  const handleProjectClick = (projectId: number) => {
+    setSelectedProjectId(projectId);
+    setActiveTab('tasks');
+  };
+
+  const handleBackToProjects = () => {
+    setSelectedProjectId(null);
+    setActiveTab('projects');
+  };
+
+  const handleFileAttachment = (taskId: string, file: File) => {
+    // Simulate file upload
+    addAttachment(taskId, {
+      name: file.name,
+      type: file.type.split('/')[1] || 'bin',
+      size: file.size,
+      url: '#' // Simulation
+    });
   };
 
   const statCards = [
@@ -244,7 +288,7 @@ const DashboardView: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={logout} />
-      
+
       <main className="flex-1 ml-64 p-8">
         {/* Header */}
         <header className="flex justify-between items-center mb-8">
@@ -257,49 +301,80 @@ const DashboardView: React.FC = () => {
           </div>
         </header>
 
-        {/* Stats Grid */}
-        <section className="grid grid-cols-4 gap-5 mb-8">
-          {statCards.map((stat, index) => (
-            <StatsCard key={index} {...stat} />
-          ))}
-        </section>
+        {/* Main Content Areas */}
+        {activeTab === 'overview' && (
+          <>
+            {/* Stats Grid */}
+            <section className="grid grid-cols-4 gap-5 mb-8">
+              {statCards.map((stat, index) => (
+                <StatsCard key={index} {...stat} />
+              ))}
+            </section>
 
-        {/* Projects Section */}
-        <section className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="text-xl font-semibold text-gray-800">Projects</h2>
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200"
-            >
-              + New Project
-            </button>
+            {/* Projects Table (Mini) */}
+            <section className="bg-white rounded-xl p-6 shadow-sm">
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-xl font-semibold text-gray-800">Recent Projects</h2>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:shadow-lg transition-all"
+                >
+                  + New Project
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-gray-100">
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Project Name</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Progress</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Due Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allProjects.slice(0, 3).map((project) => (
+                      <ProjectRow key={project.id} project={project} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </>
+        )}
+
+        {activeTab === 'projects' && (
+          <ProjectsView
+            projects={allProjects}
+            onAddProject={() => setIsModalOpen(true)}
+            onProjectClick={handleProjectClick}
+          />
+        )}
+
+        {activeTab === 'tasks' && selectedProjectId && (
+          <TasksView
+            tasks={tasks.filter(t => t.projectId === selectedProjectId)}
+            onAddTask={handleAddTask}
+            onUpdateStatus={updateTaskStatus}
+            onAddComment={(taskId, text) => addComment(taskId, user?.username || 'user', user?.username || 'User', text)}
+            onAddAttachment={handleFileAttachment}
+            onBack={handleBackToProjects}
+          />
+        )}
+
+        {activeTab === 'team' && (
+          <div className="bg-white rounded-xl p-12 text-center">
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Team Management</h3>
+            <p className="text-gray-500">Coming soon in the next update!</p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b-2 border-gray-100">
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Project Name</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Progress</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Due Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allProjects.map((project) => (
-                  <ProjectRow key={project.id} project={project} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        )}
       </main>
 
       {/* Create Project Modal */}
-      <CreateProjectModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSubmit={handleAddProject} 
+      <CreateProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddProject}
       />
     </div>
   );

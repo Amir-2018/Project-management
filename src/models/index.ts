@@ -21,6 +21,42 @@ export interface Project {
 // Project status enum
 export type ProjectStatus = 'In Progress' | 'Planning' | 'Completed' | 'On Hold';
 
+// Task status type
+export type TaskStatus = 'To Do' | 'In Progress' | 'Done' | 'Finished';
+
+// Attachment interface
+export interface Attachment {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+  uploadedAt: string;
+}
+
+// Comment interface
+export interface Comment {
+  id: string;
+  userId: string;
+  userName: string;
+  text: string;
+  createdAt: string;
+}
+
+// Task model interface
+export interface Task {
+  id: string;
+  projectId: number;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: 'Low' | 'Medium' | 'High';
+  assignee?: string;
+  dueDate?: string;
+  attachments: Attachment[];
+  comments: Comment[];
+}
+
 // Stats model interface
 export interface Stats {
   label: string;
