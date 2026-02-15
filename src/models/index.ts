@@ -12,6 +12,8 @@ export interface Project {
   status: ProjectStatus;
   progress: number;
   dueDate: string;
+  startDate?: string;
+  endDate?: string;
   description?: string;
   teamMembers?: string[];
 }

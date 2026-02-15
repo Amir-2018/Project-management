@@ -4,6 +4,139 @@ import { useProjectController } from '../controllers';
 import { APP_NAME, STATUS_COLORS } from '../constants';
 import { Project, ProjectStatus } from '../models';
 
+// Modal component for creating new project
+const CreateProjectModal: React.FC<{ isOpen: boolean; onClose: () => void; onSubmit: (project: Omit<Project, 'id'>) => void }> = ({ 
+  isOpen, 
+  onClose, 
+  onSubmit 
+}) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [status, setStatus] = useState<ProjectStatus>('Planning');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [dueDate, setDueDate] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      name,
+      description,
+      status,
+      progress: 0,
+      startDate,
+      endDate,
+      dueDate,
+    });
+    // Reset form
+    setName('');
+    setDescription('');
+    setStatus('Planning');
+    setStartDate('');
+    setEndDate('');
+    setDueDate('');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-gray-800">Create New Project</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter project name"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter project description"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as ProjectStatus)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            >
+              <option value="Planning">Planning</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="On Hold">On Hold</option>
+            </select>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+          
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Create Project
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // Sidebar component
 const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void; onLogout: () => void }> = ({ 
   activeTab, 
@@ -92,8 +225,14 @@ const ProjectRow: React.FC<{ project: Project }> = ({ project }) => (
 // Dashboard View component
 const DashboardView: React.FC = () => {
   const { user, logout } = useAuth();
-  const { stats, allProjects } = useProjectController();
+  const { stats, allProjects, addProject } = useProjectController();
   const [activeTab, setActiveTab] = useState<string>('overview');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleAddProject = (project: Omit<Project, 'id'>) => {
+    addProject(project);
+    setIsModalOpen(false);
+  };
 
   const statCards = [
     { label: 'Total Projects', value: stats.total, icon: '📁' },
@@ -129,7 +268,10 @@ const DashboardView: React.FC = () => {
         <section className="bg-white rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-5">
             <h2 className="text-xl font-semibold text-gray-800">Projects</h2>
-            <button className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200"
+            >
               + New Project
             </button>
           </div>
@@ -152,6 +294,13 @@ const DashboardView: React.FC = () => {
           </div>
         </section>
       </main>
+
+      {/* Create Project Modal */}
+      <CreateProjectModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSubmit={handleAddProject} 
+      />
     </div>
   );
 };
