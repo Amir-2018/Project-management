@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
-    
+
     try {
       const { user } = await AuthService.login(credentials);
       setAuthState({
@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signup = async (credentials: LoginCredentials & { email: string; name: string }): Promise<boolean> => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
-    
+
     try {
       const { user } = await AuthService.signup(credentials);
       setAuthState({
@@ -66,7 +66,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         loading: false,
         error: error instanceof Error ? error.message : 'Signup failed',
       }));
-      return false;
+      // Re-throw the error so it can be caught in the component
+      throw error;
     }
   };
 

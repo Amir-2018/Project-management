@@ -10,12 +10,14 @@ const LoginView: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
   const { login, signup, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
 
     if (isLogin) {
       if (!username || !password) {
@@ -35,9 +37,24 @@ const LoginView: React.FC = () => {
         return;
       }
 
-      const success = await signup({ username, password, email, name });
-      if (success) {
-        navigate('/dashboard');
+      try {
+        const success = await signup({ username, password, email, name });
+        if (success) {
+          // Show success message
+          setSuccessMessage('Admin account created successfully! Redirecting to login...');
+          // Clear form
+          setUsername('');
+          setPassword('');
+          setEmail('');
+          setName('');
+          // Switch to login mode after a short delay
+          setTimeout(() => {
+            setIsLogin(true);
+            setSuccessMessage('');
+          }, 2000);
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to create account. Please try again.');
       }
     }
   };
@@ -99,13 +116,19 @@ const LoginView: React.FC = () => {
               {isLogin ? 'Welcome Back' : 'Create Admin Account'}
             </h1>
             <p className="text-slate-400 font-medium leading-relaxed">
-              {isLogin 
-                ? 'Enter your secure credentials to verify your identity and access your team\'s workspace.' 
+              {isLogin
+                ? 'Enter your secure credentials to verify your identity and access your team\'s workspace.'
                 : 'Register a new administrator account to start managing your team and projects.'}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {successMessage && (
+              <div className="bg-green-50 text-green-600 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center border border-green-100 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                {successMessage}
+              </div>
+            )}
+
             {error && (
               <div className="bg-red-50 text-red-600 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center border border-red-100 shadow-sm animate-shake">
                 {error}
@@ -178,10 +201,11 @@ const LoginView: React.FC = () => {
           </form>
 
           <div className="mt-8 text-center">
-            <button 
+            <button
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError('');
+                setSuccessMessage('');
               }}
               className="text-xs font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition-colors"
             >
