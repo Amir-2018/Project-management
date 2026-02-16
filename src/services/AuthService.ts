@@ -8,7 +8,44 @@ export class AuthService {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (credentials.username && credentials.password) {
+    // Admin fallback or check for specific admin credentials
+    if (credentials.username === 'admin' && credentials.password === 'admin') {
+      const user: User = {
+        username: 'admin',
+        email: 'admin@example.com',
+        avatar: 'A',
+        role: 'Admin',
+      };
+
+      const token = btoa(JSON.stringify({ username: credentials.username, role: user.role, timestamp: Date.now() }));
+      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      return { user, token };
+    }
+
+    // Check members in localStorage
+    const membersData = localStorage.getItem('camping_management_members');
+    if (membersData) {
+      const members: any[] = JSON.parse(membersData);
+      const member = members.find(m => (m.email === credentials.username || m.username === credentials.username) && m.password === credentials.password);
+
+      if (member) {
+        const user: User = {
+          username: member.name,
+          email: member.email,
+          avatar: member.name.charAt(0).toUpperCase(),
+          role: 'Member',
+        };
+
+        const token = btoa(JSON.stringify({ username: member.email, role: user.role, timestamp: Date.now() }));
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+        return { user, token };
+      }
+    }
+
+    // Original simulated logic for any other combinations (optional, or just throw error)
+    if (credentials.username && credentials.password && credentials.password === 'password123') {
       const role = credentials.username.toLowerCase().includes('member') ? 'Member' : 'Admin';
       const user: User = {
         username: credentials.username,

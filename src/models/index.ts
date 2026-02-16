@@ -9,9 +9,11 @@ export interface User {
 // Member model interface
 export interface Member {
   id: string;
+  username: string;
   name: string;
   email: string;
   role: string;
+  password?: string;
   avatar?: string;
   managerId?: string;
 }

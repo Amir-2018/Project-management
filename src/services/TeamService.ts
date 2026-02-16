@@ -21,11 +21,11 @@ class TeamService {
         const stored = localStorage.getItem(this.MEMBERS_KEY);
         if (!stored) {
             const initialMembers: Member[] = [
-                { id: 'm1', name: 'Amir', email: 'amir@example.com', role: 'Director', managerId: undefined },
-                { id: 'm2', name: 'Sarah', email: 'sarah@example.com', role: 'Head of Product', managerId: 'm1' },
-                { id: 'm3', name: 'John', email: 'john@example.com', role: 'Engineering Manager', managerId: 'm1' },
-                { id: 'm4', name: 'Elena', email: 'elena@example.com', role: 'Senior Designer', managerId: 'm2' },
-                { id: 'm5', name: 'Dev', email: 'dev@example.com', role: 'Full Stack Developer', managerId: 'm3' }
+                { id: 'm1', username: 'amir', name: 'Amir', email: 'amir@example.com', role: 'Director', managerId: undefined, password: 'password123' },
+                { id: 'm2', username: 'sarah', name: 'Sarah', email: 'sarah@example.com', role: 'Head of Product', managerId: 'm1', password: 'password123' },
+                { id: 'm3', username: 'john', name: 'John', email: 'john@example.com', role: 'Engineering Manager', managerId: 'm1', password: 'password123' },
+                { id: 'm4', username: 'elena', name: 'Elena', email: 'elena@example.com', role: 'Senior Designer', managerId: 'm2', password: 'password123' },
+                { id: 'm5', username: 'dev', name: 'Dev', email: 'dev@example.com', role: 'Full Stack Developer', managerId: 'm3', password: 'password123' }
             ];
             this.saveMembers(initialMembers);
             return initialMembers;
@@ -103,7 +103,8 @@ class TeamService {
         const members = this.getMembers();
         const newMember: Member = {
             ...member,
-            id: Math.random().toString(36).substr(2, 9)
+            id: Math.random().toString(36).substr(2, 9),
+            password: member.password || Math.random().toString(36).slice(-8)
         };
         members.push(newMember);
         this.saveMembers(members);
