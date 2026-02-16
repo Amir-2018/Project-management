@@ -12,31 +12,134 @@ interface MembersViewProps {
     onDeleteMember: (memberId: string) => void;
     onAssignToTeam: (teamId: string, memberId: string) => void;
     onRemoveFromTeam: (teamId: string, memberId: string) => void;
+    onUpdateProject: (projectId: number, updates: Partial<Project>) => void;
 }
+
+const AssignmentModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    member: Member;
+    teams: Team[];
+    projects: Project[];
+    onAssignToTeam: (teamId: string, memberId: string) => void;
+    onRemoveFromTeam: (teamId: string, memberId: string) => void;
+    onUpdateProject: (projectId: number, updates: Partial<Project>) => void;
+}> = ({ isOpen, onClose, member, teams, projects, onAssignToTeam, onRemoveFromTeam, onUpdateProject }) => {
+    const { t } = useTranslation();
+    
+    if (!isOpen) return null;
+
+    const memberTeams = teams.filter(team => team.members.some(m => m.id === member.id));
+    const memberProjects = projects.filter(project => project.memberIds?.includes(member.id));
+
+    const toggleTeam = (teamId: string, isAssigned: boolean) => {
+        if (isAssigned) {
+            onRemoveFromTeam(teamId, member.id);
+        } else {
+            onAssignToTeam(teamId, member.id);
+        }
+    };
+
+    const toggleProject = (project: Project, isAssigned: boolean) => {
+        const currentMemberIds = project.memberIds || [];
+        if (isAssigned) {
+            onUpdateProject(project.id, { 
+                memberIds: currentMemberIds.filter(id => id !== member.id) 
+            });
+        } else {
+            onUpdateProject(project.id, { 
+                memberIds: [...currentMemberIds, member.id] 
+            });
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-2xl p-10 shadow-3xl animate-in zoom-in duration-300 border border-white/20">
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">
+                            Manage Assignments
+                        </h3>
+                        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Assign {member.name} to teams and projects</p>
+                    </div>
+                    <button onClick={onClose} className="text-slate-300 hover:text-slate-900 transition-all p-3 hover:bg-slate-50 rounded-2xl group">
+                        <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8">
+                    <div>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Teams</h4>
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                            {teams.map(team => {
+                                const isAssigned = memberTeams.some(t => t.id === team.id);
+                                return (
+                                    <button
+                                        key={team.id}
+                                        onClick={() => toggleTeam(team.id, isAssigned)}
+                                        className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
+                                            isAssigned 
+                                            ? 'bg-indigo-50 border-indigo-100 text-indigo-700' 
+                                            : 'bg-slate-50 border-transparent text-slate-600 hover:border-slate-100'
+                                        }`}
+                                    >
+                                        <span className="font-bold text-sm uppercase tracking-tight">{team.name}</span>
+                                        {isAssigned ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Projects</h4>
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                            {projects.map(project => {
+                                const isAssigned = memberProjects.some(p => p.id === project.id);
+                                return (
+                                    <button
+                                        key={project.id}
+                                        onClick={() => toggleProject(project, isAssigned)}
+                                        className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
+                                            isAssigned 
+                                            ? 'bg-purple-50 border-purple-100 text-purple-700' 
+                                            : 'bg-slate-50 border-transparent text-slate-600 hover:border-slate-100'
+                                        }`}
+                                    >
+                                        <span className="font-bold text-sm uppercase tracking-tight">{project.name}</span>
+                                        {isAssigned ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    onClick={onClose}
+                    className="w-full bg-slate-800 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-slate-900 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-slate-200 mt-8"
+                >
+                    Done
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const MemberModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (member: Omit<Member, 'id'>, teamIds: string[], projectIds: number[]) => void;
+    onSubmit: (member: Omit<Member, 'id'>) => void;
     initialData?: Member | null;
     allMembers: Member[];
-    teams: Team[];
-    projects: Project[];
-}> = ({ isOpen, onClose, onSubmit, initialData, allMembers, teams, projects }) => {
+}> = ({ isOpen, onClose, onSubmit, initialData, allMembers }) => {
     const { t } = useTranslation();
     const [username, setUsername] = useState(initialData?.username || '');
     const [name, setName] = useState(initialData?.name || '');
     const [email, setEmail] = useState(initialData?.email || '');
     const [role, setRole] = useState(initialData?.role || '');
     const [password, setPassword] = useState(initialData?.password || '');
-    
-    // Initialize assignments
-    const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>(
-        initialData ? teams.filter(t => t.members.some(m => m.id === initialData.id)).map(t => t.id) : []
-    );
-    const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>(
-        initialData ? projects.filter(p => p.memberIds?.includes(initialData.id)).map(p => p.id) : []
-    );
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,8 +148,8 @@ const MemberModal: React.FC<{
             name,
             email,
             role,
-            password
-        }, selectedTeamIds, selectedProjectIds);
+            password,
+        });
         onClose();
     };
 
@@ -143,54 +246,6 @@ const MemberModal: React.FC<{
                         </div>
                     </div>
 
-
-
-                    <div className="space-y-2 col-span-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('team.title')}</label>
-                        <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-2xl border-2 border-transparent">
-                            {teams.map(team => (
-                                <label key={team.id} className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-indigo-200 transition-all">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedTeamIds.includes(team.id)}
-                                        onChange={(e) => {
-                                            if (e.target.checked) {
-                                                setSelectedTeamIds([...selectedTeamIds, team.id]);
-                                            } else {
-                                                setSelectedTeamIds(selectedTeamIds.filter(id => id !== team.id));
-                                            }
-                                        }}
-                                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                                    />
-                                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{team.name}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="space-y-2 col-span-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('common.projects')}</label>
-                        <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-2xl border-2 border-transparent">
-                            {projects.map(project => (
-                                <label key={project.id} className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-indigo-200 transition-all">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedProjectIds.includes(project.id)}
-                                        onChange={(e) => {
-                                            if (e.target.checked) {
-                                                setSelectedProjectIds([...selectedProjectIds, project.id]);
-                                            } else {
-                                                setSelectedProjectIds(selectedProjectIds.filter(id => id !== project.id));
-                                            }
-                                        }}
-                                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                                    />
-                                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{project.name}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
                     <button
                         type="submit"
                         className="w-full col-span-2 bg-indigo-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-indigo-700 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-indigo-200 mt-4 flex items-center justify-center gap-3"
@@ -203,16 +258,15 @@ const MemberModal: React.FC<{
     );
 };
 
-
-
 const MemberTable: React.FC<{
     members: Member[];
     teams: Team[];
     projects: Project[];
     onEdit: (member: Member) => void;
     onDelete: (memberId: string) => void;
+    onAssign: (member: Member) => void;
     allMembers: Member[];
-}> = ({ members, teams, projects, onEdit, onDelete, allMembers }) => {
+}> = ({ members, teams, projects, onEdit, onDelete, onAssign, allMembers }) => {
     const { t } = useTranslation();
     const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
 
@@ -299,6 +353,13 @@ const MemberTable: React.FC<{
                                         {getMemberTeams(member.id).length === 0 && getMemberProjects(member.id).length === 0 && (
                                             <span className="text-[9px] font-bold text-slate-300 uppercase italic tracking-widest">Unassigned</span>
                                         )}
+                                        <button 
+                                            onClick={() => onAssign(member)}
+                                            className="ml-auto p-1.5 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-all"
+                                            title="Manage Assignments"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                        </button>
                                     </div>
                                 </td>
                                 <td className="px-8 py-6 text-right">
@@ -334,11 +395,13 @@ const MembersView: React.FC<MembersViewProps> = ({
     onUpdateMember,
     onDeleteMember,
     onAssignToTeam,
-    onRemoveFromTeam
+    onRemoveFromTeam,
+    onUpdateProject
 }) => {
     const { t } = useTranslation();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<Member | null>(null);
+    const [assigningMember, setAssigningMember] = useState<Member | null>(null);
 
     React.useEffect(() => {
         const handler = () => {
@@ -353,6 +416,8 @@ const MembersView: React.FC<MembersViewProps> = ({
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex justify-between items-end">
                 <div className="space-y-1">
+                    <h2 className="text-3xl font-black text-slate-800 tracking-tight uppercase leading-none">{t('members.title')}</h2>
+                    <p className="text-slate-400 font-bold text-sm tracking-tight">{t('members.subtitle')}</p>
                 </div>
             </div>
 
@@ -362,7 +427,8 @@ const MembersView: React.FC<MembersViewProps> = ({
                 projects={projects}
                 allMembers={members}
                 onEdit={(member) => { setEditingMember(member); setIsModalOpen(true); }}
-                onDelete={(memberId) => onDeleteMember(memberId)}
+                onDelete={(id) => onDeleteMember(id)}
+                onAssign={(member) => setAssigningMember(member)}
             />
 
             {isModalOpen && (
@@ -371,25 +437,26 @@ const MembersView: React.FC<MembersViewProps> = ({
                     onClose={() => { setIsModalOpen(false); setEditingMember(null); }}
                     initialData={editingMember}
                     allMembers={members}
-                    teams={teams}
-                    projects={projects}
-                    onSubmit={(data, teamIds, projectIds) => {
+                    onSubmit={(data) => {
                         if (editingMember) {
                             onUpdateMember(editingMember.id, data);
-                            // Handle team and project assignments
-                            teams.forEach(team => {
-                                const isAssigned = team.members.some(m => m.id === editingMember.id);
-                                const shouldBeAssigned = teamIds.includes(team.id);
-                                if (shouldBeAssigned && !isAssigned) onAssignToTeam(team.id, editingMember.id);
-                                if (!shouldBeAssigned && isAssigned) onRemoveFromTeam(team.id, editingMember.id);
-                            });
-                            // Note: onUpdateMember should ideally handle projectIds if backend supports it
-                            // For now, we update the member properties
                         } else {
                             onAddMember(data);
-                            // For new members, assignments would usually happen after ID generation
                         }
                     }}
+                />
+            )}
+
+            {assigningMember && (
+                <AssignmentModal
+                    isOpen={!!assigningMember}
+                    onClose={() => setAssigningMember(null)}
+                    member={assigningMember}
+                    teams={teams}
+                    projects={projects}
+                    onAssignToTeam={onAssignToTeam}
+                    onRemoveFromTeam={onRemoveFromTeam}
+                    onUpdateProject={onUpdateProject}
                 />
             )}
         </div>

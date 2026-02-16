@@ -242,14 +242,26 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                                     <select
                                         value={task.status}
                                         onChange={(e) => onUpdateStatus(e.target.value as Task['status'])}
-                                        className="w-full bg-white border border-slate-100 rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none appearance-none cursor-pointer shadow-sm transition-all"
+                                        className={`w-full border rounded-2xl px-6 py-4 text-xs font-black uppercase tracking-widest focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none appearance-none cursor-pointer shadow-sm transition-all ${
+                                            task.status === 'To Do' ? 'bg-slate-50 border-slate-100 text-slate-600' :
+                                            task.status === 'In Progress' ? 'bg-blue-50 border-blue-100 text-blue-600' :
+                                            task.status === 'Done' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                                            task.status === 'Finished' ? 'bg-indigo-50 border-indigo-100 text-indigo-600' :
+                                            'bg-white border-slate-100'
+                                        }`}
                                     >
-                                        <option value="To Do">{t('tasks.todo')}</option>
-                                        <option value="In Progress">{t('tasks.in_progress')}</option>
-                                        <option value="Done">{t('tasks.done')}</option>
-                                        <option value="Finished">{t('tasks.finished')}</option>
+                                        <option value="To Do" className="bg-white text-slate-600">{t('tasks.todo')}</option>
+                                        <option value="In Progress" className="bg-white text-blue-600">{t('tasks.in_progress')}</option>
+                                        <option value="Done" className="bg-white text-emerald-600">{t('tasks.done')}</option>
+                                        <option value="Finished" className="bg-white text-indigo-600">{t('tasks.finished')}</option>
                                     </select>
-                                    <ArrowUpCircle className="w-4 h-4 absolute right-5 top-1/2 -translate-y-1/2 rotate-180 text-indigo-400 pointer-events-none" />
+                                    <ArrowUpCircle className={`w-4 h-4 absolute right-5 top-1/2 -translate-y-1/2 rotate-180 pointer-events-none transition-colors ${
+                                        task.status === 'To Do' ? 'text-slate-400' :
+                                        task.status === 'In Progress' ? 'text-blue-400' :
+                                        task.status === 'Done' ? 'text-emerald-400' :
+                                        task.status === 'Finished' ? 'text-indigo-400' :
+                                        'text-indigo-400'
+                                    }`} />
                                 </div>
                             </section>
 

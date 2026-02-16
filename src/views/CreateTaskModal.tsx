@@ -102,14 +102,26 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
                                 <select
                                     value={status}
                                     onChange={(e) => setStatus(e.target.value as any)}
-                                    className="w-full px-6 py-4 rounded-2xl border border-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all font-black text-[10px] uppercase tracking-widest appearance-none bg-white cursor-pointer"
+                                    className={`w-full px-6 py-4 rounded-2xl border focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all font-black text-[10px] uppercase tracking-widest appearance-none cursor-pointer ${
+                                        status === 'To Do' ? 'bg-slate-50 border-slate-100 text-slate-600' :
+                                        status === 'In Progress' ? 'bg-blue-50 border-blue-100 text-blue-600' :
+                                        status === 'Done' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                                        status === 'Finished' ? 'bg-indigo-50 border-indigo-100 text-indigo-600' :
+                                        'bg-white border-slate-100'
+                                    }`}
                                 >
-                                    <option value="To Do">{t('tasks.todo')}</option>
-                                    <option value="In Progress">{t('tasks.in_progress')}</option>
-                                    <option value="Done">{t('tasks.done')}</option>
-                                    <option value="Finished">{t('tasks.finished')}</option>
+                                    <option value="To Do" className="bg-white text-slate-600">{t('tasks.todo')}</option>
+                                    <option value="In Progress" className="bg-white text-blue-600">{t('tasks.in_progress')}</option>
+                                    <option value="Done" className="bg-white text-emerald-600">{t('tasks.done')}</option>
+                                    <option value="Finished" className="bg-white text-indigo-600">{t('tasks.finished')}</option>
                                 </select>
-                                <Layers className="w-3.5 h-3.5 absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                                <Layers className={`w-3.5 h-3.5 absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${
+                                    status === 'To Do' ? 'text-slate-400' :
+                                    status === 'In Progress' ? 'text-blue-400' :
+                                    status === 'Done' ? 'text-emerald-400' :
+                                    status === 'Finished' ? 'text-indigo-400' :
+                                    'text-slate-300'
+                                }`} />
                             </div>
                         </div>
                     </div>

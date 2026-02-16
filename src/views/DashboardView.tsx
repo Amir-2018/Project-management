@@ -523,10 +523,12 @@ const DashboardView: React.FC = () => {
               teams={teams}
               projects={allProjects}
               onAddMember={addMember}
+              updateMember={updateMember}
               onUpdateMember={updateMember}
               onDeleteMember={deleteMember}
               onAssignToTeam={assignMember}
               onRemoveFromTeam={removeMember}
+              onUpdateProject={updateProject}
             />
           )}
 

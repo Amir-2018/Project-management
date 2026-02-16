@@ -46,6 +46,26 @@ const TasksView: React.FC<TasksViewProps> = ({
         }
     };
 
+    const getStatusStyles = (status: TaskStatus) => {
+        switch (status) {
+            case 'To Do': return 'bg-slate-50/50 border-slate-100 text-slate-600';
+            case 'In Progress': return 'bg-blue-50/50 border-blue-100 text-blue-600';
+            case 'Done': return 'bg-emerald-50/50 border-emerald-100 text-emerald-600';
+            case 'Finished': return 'bg-indigo-50/50 border-indigo-100 text-indigo-600';
+            default: return 'bg-slate-50/50 border-slate-100 text-slate-600';
+        }
+    };
+
+    const getStatusBadgeStyles = (status: TaskStatus) => {
+        switch (status) {
+            case 'To Do': return 'bg-slate-100 text-slate-600';
+            case 'In Progress': return 'bg-blue-100 text-blue-600';
+            case 'Done': return 'bg-emerald-100 text-emerald-600';
+            case 'Finished': return 'bg-indigo-100 text-indigo-600';
+            default: return 'bg-slate-100 text-slate-600';
+        }
+    };
+
     const getTasksByStatus = (status: TaskStatus) => tasks.filter(t => t.status === status);
 
     const handleTaskClick = (task: Task) => {
@@ -96,13 +116,15 @@ const TasksView: React.FC<TasksViewProps> = ({
                             onDragOver={(e) => handleDragOver(e, status)}
                             onDragLeave={handleDragLeave}
                             onDrop={(e) => handleDrop(e, status)}
-                            className={`flex-1 min-w-[300px] flex flex-col rounded-[2rem] p-6 transition-all duration-300 ${dropTargetStatus === status ? 'bg-indigo-50 border-2 border-dashed border-indigo-200' : 'bg-slate-50 border-2 border-transparent'
+                            className={`flex-1 min-w-[300px] flex flex-col rounded-[2rem] p-6 transition-all duration-300 border-2 ${dropTargetStatus === status 
+                                ? 'bg-indigo-50 border-dashed border-indigo-200' 
+                                : `${getStatusStyles(status).split(' ')[0]} border-transparent`
                                 }`}
                         >
                             <div className="flex justify-between items-center mb-6 px-2">
                                 <div className="flex items-center gap-3">
-                                    <h3 className="font-black text-slate-800 text-sm uppercase tracking-widest">{t(getStatusKey(status))}</h3>
-                                    <span className="bg-white px-3 py-1 rounded-full text-[10px] font-black text-indigo-600 shadow-sm">
+                                    <h3 className={`font-black text-sm uppercase tracking-widest ${getStatusStyles(status).split(' ')[2]}`}>{t(getStatusKey(status))}</h3>
+                                    <span className={`${getStatusBadgeStyles(status)} px-3 py-1 rounded-full text-[10px] font-black shadow-sm`}>
                                         {getTasksByStatus(status).length}
                                     </span>
                                 </div>
