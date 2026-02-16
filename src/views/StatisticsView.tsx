@@ -1,56 +1,51 @@
 import React, { useMemo } from 'react';
-import { Layout, TrendingUp, CheckCircle2, Zap, BarChart3, Calendar } from 'lucide-react';
-import { useTranslation, Trans } from 'react-i18next';
-import { Project, Task } from '../models';
+import { Layout, TrendingUp, CheckCircle2, Zap, BarChart3, Users, ListTodo, Clock, CheckSquare } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Project, Task, Member, TaskStatus } from '../models';
 
 interface StatisticsViewProps {
     projects: Project[];
     tasks: Task[];
+    allTasks: Task[];
+    members: Member[];
 }
 
-const StatisticsView: React.FC<StatisticsViewProps> = ({ projects, tasks }) => {
+const StatisticsView: React.FC<StatisticsViewProps> = ({ projects, tasks, allTasks, members }) => {
     const { t } = useTranslation();
-    // Mock performance data for charts (since real historical data isn't in service yet)
-    const monthlyData = [
-        { name: 'Jan', projects: 2, tasks: 12 },
-        { name: 'Feb', projects: 3, tasks: 18 },
-        { name: 'Mar', projects: 1, tasks: 15 },
-        { name: 'Apr', projects: 4, tasks: 22 },
-        { name: 'May', projects: 5, tasks: 30 },
-        { name: 'Jun', projects: 3, tasks: 25 }
-    ];
-
-    const weeklyData = [
-        { day: 'Mon', completion: 40 },
-        { day: 'Tue', completion: 65 },
-        { day: 'Wed', completion: 50 },
-        { day: 'Thu', completion: 85 },
-        { day: 'Fri', completion: 70 },
-        { day: 'Sat', completion: 30 },
-        { day: 'Sun', completion: 20 }
-    ];
 
     const stats = useMemo(() => {
         const totalProjects = projects.length;
-        const completedProjects = projects.filter(p => p.status === 'Completed').length;
-        const avgProgress = projects.length > 0
-            ? Math.round(projects.reduce((acc, p) => acc + p.progress, 0) / projects.length)
-            : 0;
         const totalTasks = tasks.length;
-        const doneTasks = tasks.filter(t => t.status === 'Done' || t.status === 'Finished').length;
+        
+        // Task status distribution
+        const statusCounts: Record<TaskStatus, number> = {
+            'To Do': tasks.filter(t => t.status === 'To Do').length,
+            'In Progress': tasks.filter(t => t.status === 'In Progress').length,
+            'Done': tasks.filter(t => t.status === 'Done').length,
+            'Finished': tasks.filter(t => t.status === 'Finished').length
+        };
 
-        return { totalProjects, completedProjects, avgProgress, totalTasks, doneTasks };
-    }, [projects, tasks]);
+        // Tasks per member
+        const tasksByMember = members.map(member => ({
+            name: member.name,
+            count: allTasks.filter(t => t.assignee === member.name).length,
+            completed: allTasks.filter(t => t.assignee === member.name && (t.status === 'Done' || t.status === 'Finished')).length
+        })).sort((a, b) => b.count - a.count);
+
+        return { totalProjects, totalTasks, statusCounts, tasksByMember };
+    }, [projects, tasks, allTasks, members]);
+
+    const isSingleMember = members.length === 1;
 
     return (
         <div className="space-y-10 animate-in fade-in duration-700">
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: t('statistics.active_projects'), value: stats.totalProjects, icon: <Layout className="w-6 h-6" />, color: 'bg-indigo-500' },
-                    { label: t('statistics.avg_progress'), value: `${stats.avgProgress}%`, icon: <TrendingUp className="w-6 h-6" />, color: 'bg-emerald-500' },
-                    { label: t('statistics.tasks_completed'), value: stats.doneTasks, icon: <CheckCircle2 className="w-6 h-6" />, color: 'bg-amber-500' },
-                    { label: t('statistics.team_velocity'), value: '8.4', icon: <Zap className="w-6 h-6" />, color: 'bg-purple-500' }
+                    { label: t('common.projects'), value: stats.totalProjects, icon: <Layout className="w-6 h-6" />, color: 'bg-indigo-500' },
+                    { label: isSingleMember ? 'My Tasks' : t('common.tasks'), value: stats.totalTasks, icon: <ListTodo className="w-6 h-6" />, color: 'bg-blue-500' },
+                    { label: t('tasks.in_progress'), value: stats.statusCounts['In Progress'], icon: <Clock className="w-6 h-6" />, color: 'bg-amber-500' },
+                    { label: t('tasks.done'), value: stats.statusCounts['Done'] + stats.statusCounts['Finished'], icon: <CheckSquare className="w-6 h-6" />, color: 'bg-emerald-500' }
                 ].map((item, i) => (
                     <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-xl transition-all">
                         <div className={`w-14 h-14 ${item.color} text-white rounded-2xl flex items-center justify-center shadow-lg ring-4 ring-white`}>
@@ -65,163 +60,145 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ projects, tasks }) => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                {/* Project Delivery Chart (Custom Bar Chart) */}
+                {/* Tasks Status Breakdown */}
                 <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
-                    <div className="flex justify-between items-center mb-10">
-                        <div>
-                            <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">{t('statistics.monthly_performance')}</h3>
-                            <p className="text-slate-400 text-xs font-medium">{t('statistics.trends')}</p>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                                <span className="text-[10px] font-black text-slate-400 uppercase">{t('common.projects')}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-indigo-200"></div>
-                                <span className="text-[10px] font-black text-slate-400 uppercase">{t('tasks.milestones')}</span>
-                            </div>
-                        </div>
+                    <div className="mb-8">
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">
+                            {isSingleMember ? 'My Task Status' : 'Task Status Breakdown'}
+                        </h3>
+                        <p className="text-slate-400 text-xs font-medium">
+                            {isSingleMember ? 'Distribution of my tasks by status' : 'Distribution of tasks by their current status'}
+                        </p>
                     </div>
 
-                    <div className="h-64 flex items-end justify-between gap-4 px-2">
-                        {monthlyData.map((data, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-4 group">
-                                <div className="w-full flex flex-col items-center gap-1">
-                                    <div
-                                        className="w-full max-w-[40px] bg-indigo-200 rounded-t-lg transition-all duration-1000 ease-out group-hover:bg-indigo-300"
-                                        style={{ height: `${data.tasks * 4}px` }}
-                                    />
-                                    <div
-                                        className="w-full max-w-[40px] bg-indigo-600 rounded-t-lg transition-all duration-1000 delay-100 ease-out group-hover:bg-indigo-700 shadow-lg shadow-indigo-200"
-                                        style={{ height: `${data.projects * 20}px` }}
-                                    />
+                    <div className="space-y-6">
+                        {(Object.entries(stats.statusCounts) as [TaskStatus, number][]).map(([status, count]) => {
+                            const percentage = stats.totalTasks > 0 ? Math.round((count / stats.totalTasks) * 100) : 0;
+                            const color = status === 'To Do' ? 'bg-slate-400' : 
+                                          status === 'In Progress' ? 'bg-blue-500' :
+                                          status === 'Done' ? 'bg-emerald-500' : 'bg-indigo-600';
+                            
+                            return (
+                                <div key={status} className="space-y-2">
+                                    <div className="flex justify-between items-end">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${color}`}></div>
+                                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{status}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-sm font-black text-slate-800">{count}</span>
+                                            <span className="text-[10px] font-bold text-slate-400 ml-2">{percentage}%</span>
+                                        </div>
+                                    </div>
+                                    <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden">
+                                        <div 
+                                            className={`h-full ${color} transition-all duration-1000`} 
+                                            style={{ width: `${percentage}%` }}
+                                        ></div>
+                                    </div>
                                 </div>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{data.name}</span>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
-                {/* Weekly Progress Chart (Custom Area Chart) */}
+                {/* Tasks by Member / Performance */}
                 <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
-                    <div className="flex justify-between items-center mb-10">
-                        <div>
-                            <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">{t('statistics.weekly_velocity')}</h3>
-                            <p className="text-slate-400 text-xs font-medium">{t('statistics.velocity_subtitle')}</p>
-                        </div>
-                        <select className="bg-slate-50 border-none outline-none text-[10px] font-black text-slate-500 uppercase tracking-widest p-2 rounded-xl">
-                            <option>{t('statistics.this_week')}</option>
-                            <option>{t('statistics.last_week')}</option>
-                        </select>
+                    <div className="mb-8">
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">
+                            {isSingleMember ? 'My Performance' : 'Tasks by Member'}
+                        </h3>
+                        <p className="text-slate-400 text-xs font-medium">
+                            {isSingleMember ? 'My task completion summary' : 'Workload distribution across the team'}
+                        </p>
                     </div>
 
-                    <div className="relative h-64 w-full">
-                        <svg className="w-full h-full overflow-visible" viewBox="0 0 700 200" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="velocityGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.4" />
-                                    <stop offset="100%" stopColor="#4F46E5" stopOpacity="0" />
-                                </linearGradient>
-                            </defs>
-                            {/* Grid Lines */}
-                            <line x1="0" y1="0" x2="700" y2="0" stroke="#F1F5F9" strokeWidth="1" />
-                            <line x1="0" y1="50" x2="700" y2="50" stroke="#F1F5F9" strokeWidth="1" />
-                            <line x1="0" y1="100" x2="700" y2="100" stroke="#F1F5F9" strokeWidth="1" />
-                            <line x1="0" y1="150" x2="700" y2="150" stroke="#F1F5F9" strokeWidth="1" />
-                            <line x1="0" y1="200" x2="700" y2="200" stroke="#F1F5F9" strokeWidth="1" />
-
-                            {/* Area */}
-                            <path
-                                d={`M 0 200 ${weeklyData.map((d, i) => `L ${i * 116} ${200 - (d.completion * 2)}`).join(' ')} L 700 200 Z`}
-                                fill="url(#velocityGradient)"
-                                className="animate-in fade-in duration-1000"
-                            />
-                            {/* Line */}
-                            <path
-                                d={`M 0 ${200 - (weeklyData[0].completion * 2)} ${weeklyData.map((d, i) => `L ${i * 116} ${200 - (d.completion * 2)}`).join(' ')}`}
-                                fill="none"
-                                stroke="#4F46E5"
-                                strokeWidth="4"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="animate-in slide-in-from-left duration-1000"
-                            />
-                            {/* Dots */}
-                            {weeklyData.map((d, i) => (
-                                <circle
-                                    key={i}
-                                    cx={i * 116}
-                                    cy={200 - (d.completion * 2)}
-                                    r="6"
-                                    fill="white"
-                                    stroke="#4F46E5"
-                                    strokeWidth="3"
-                                    className="hover:r-8 transition-all cursor-pointer"
-                                />
-                            ))}
-                        </svg>
-                        <div className="flex justify-between mt-6 px-1">
-                            {weeklyData.map((d, i) => (
-                                <span key={i} className="text-[10px] font-black text-slate-400 uppercase tracking-tighter w-12 text-center">{d.day}</span>
-                            ))}
-                        </div>
+                    <div className="overflow-hidden">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="border-b border-slate-50">
+                                    <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{isSingleMember ? 'User' : 'Member'}</th>
+                                    <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Total</th>
+                                    <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Completed</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {stats.tasksByMember.map((m, i) => (
+                                    <tr key={i} className="group">
+                                        <td className="py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-600 uppercase">
+                                                    {m.name.charAt(0)}
+                                                </div>
+                                                <span className="text-xs font-bold text-slate-700 uppercase tracking-tight">{m.name}</span>
+                                            </div>
+                                        </td>
+                                        <td className="py-4 text-center">
+                                            <span className="text-sm font-black text-slate-800">{m.count}</span>
+                                        </td>
+                                        <td className="py-4 text-right">
+                                            <div className="inline-flex items-center gap-2">
+                                                <span className="text-xs font-bold text-emerald-600">{m.completed}</span>
+                                                <div className="w-12 h-1 bg-slate-50 rounded-full overflow-hidden">
+                                                    <div 
+                                                        className="h-full bg-emerald-500" 
+                                                        style={{ width: `${m.count > 0 ? (m.completed / m.count) * 100 : 0}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {stats.tasksByMember.length === 0 && (
+                                    <tr>
+                                        <td colSpan={3} className="py-8 text-center text-slate-400 text-xs font-medium italic">
+                                            No data found
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            {/* Project Status Matrix */}
+            {/* Efficiency Summary */}
             <div className="bg-slate-900 rounded-[2.5rem] p-12 text-white overflow-hidden relative shadow-2xl">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/20 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
-                <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-12">
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-12">
                     <div className="max-w-md">
-                        <span className="text-indigo-400 text-xs font-black uppercase tracking-[0.2em] mb-4 block">{t('statistics.strategic_insights')}</span>
-                        <h3 className="text-4xl font-black tracking-tight mb-6">{t('statistics.efficiency_matrix')}</h3>
+                        <span className="text-indigo-400 text-xs font-black uppercase tracking-[0.2em] mb-4 block">
+                            {isSingleMember ? 'My Strategic Overview' : 'Strategic Overview'}
+                        </span>
+                        <h3 className="text-4xl font-black tracking-tight mb-6">
+                            {isSingleMember ? 'My Efficiency' : 'Efficiency Summary'}
+                        </h3>
                         <p className="text-slate-400 font-medium leading-relaxed">
-                            <Trans i18nKey="statistics.efficiency_description">
-                                Your team is currently operating at <span className="text-white">92% efficiency</span>. The "Marketing" team has the highest velocity this month, having cleared 14 project milestones.
-                            </Trans>
+                            {isSingleMember 
+                                ? `You are currently working on ${stats.totalProjects} projects with ${stats.totalTasks} total tasks assigned.`
+                                : `Overview of team productivity and project completion status. Currently monitoring ${stats.totalProjects} active projects and ${stats.totalTasks} tasks.`
+                            }
                         </p>
-                        <div className="mt-8 flex gap-8">
-                            <div>
-                                <div className="text-3xl font-black">2.4d</div>
-                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">{t('statistics.avg_lead_time')}</div>
-                            </div>
-                            <div className="w-px h-12 bg-slate-800"></div>
-                            <div>
-                                <div className="text-3xl font-black">+18%</div>
-                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">{t('statistics.vs_last_month')}</div>
-                            </div>
-                        </div>
                     </div>
 
-                    <div className="flex gap-4">
-                        {[
-                            { label: t('tasks.todo'), value: 45, color: 'bg-amber-500' },
-                            { label: t('tasks.in_progress'), value: 75, color: 'bg-indigo-500' },
-                            { label: t('tasks.done'), value: 40, color: 'bg-emerald-500' }
-                        ].map((item, i) => (
-                            <div key={i} className="bg-slate-800/50 backdrop-blur-md p-8 rounded-3xl border border-slate-700/50 flex flex-col items-center gap-6 w-32 group hover:bg-slate-800 transition-all">
-                                <div className="relative w-16 h-16 flex items-center justify-center">
-                                    <svg className="w-full h-full -rotate-90">
-                                        <circle cx="32" cy="32" r="28" fill="none" stroke="#1E293B" strokeWidth="8" />
-                                        <circle
-                                            cx="32" cy="32" r="28" fill="none"
-                                            stroke={item.color === 'bg-amber-500' ? '#F59E0B' : item.color === 'bg-indigo-500' ? '#6366F1' : '#10B981'}
-                                            strokeWidth="8"
-                                            strokeDasharray="176"
-                                            strokeDashoffset={176 - (176 * item.value / 100)}
-                                            strokeLinecap="round"
-                                            className="transition-all duration-1000 ease-out"
-                                        />
-                                    </svg>
-                                    <span className="absolute text-xs font-black">{item.value}%</span>
-                                </div>
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
+                    <div className="flex gap-12">
+                        <div className="text-center">
+                            <div className="text-5xl font-black text-indigo-400 mb-2">
+                                {stats.totalTasks > 0 ? Math.round(((stats.statusCounts['Done'] + stats.statusCounts['Finished']) / stats.totalTasks) * 100) : 0}%
                             </div>
-                        ))}
+                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                {isSingleMember ? 'My Completion' : 'Global Completion'}
+                            </div>
+                        </div>
+                        <div className="w-px h-16 bg-slate-800 hidden md:block"></div>
+                        <div className="text-center">
+                            <div className="text-5xl font-black text-emerald-400 mb-2">
+                                {stats.statusCounts['Finished']}
+                            </div>
+                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tasks Finished</div>
+                        </div>
                     </div>
                 </div>
             </div>

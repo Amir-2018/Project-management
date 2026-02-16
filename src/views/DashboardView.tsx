@@ -321,7 +321,11 @@ const DashboardView: React.FC = () => {
 
   const userTasks = user?.role === 'Admin'
     ? tasks
-    : tasks.filter(t => members.find(m => m.id === t.assignee)?.email === user?.email);
+    : tasks.filter(t => t.assignee === members.find(m => m.email === user?.email)?.name);
+
+  const filteredMembers = user?.role === 'Admin'
+    ? members
+    : members.filter(m => m.email === user?.email);
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
@@ -331,7 +335,6 @@ const DashboardView: React.FC = () => {
         <header className="flex justify-between items-center mb-12">
           <div>
             <h1 className="text-4xl font-black text-slate-800 tracking-tight capitalize">{t(`common.${activeTab}`)}</h1>
-            <p className="text-slate-400 font-medium mt-1">{t('dashboard.empowering')}</p>
           </div>
           <div className="flex items-center gap-6">
             {/* Notifications */}
@@ -536,6 +539,8 @@ const DashboardView: React.FC = () => {
             <StatisticsView
               projects={filteredProjects}
               tasks={userTasks}
+              allTasks={user?.role === 'Admin' ? tasks : userTasks}
+              members={filteredMembers}
             />
           )}
         </div>
@@ -578,24 +583,26 @@ const DashboardView: React.FC = () => {
       />
 
       {/* Floating Action Button */}
-      <button
-        onClick={() => {
-          if (activeTab === 'projects') {
-            setEditingProject(null);
-            setIsProjectModalOpen(true);
-          } else if (activeTab === 'tasks') {
-            setIsTaskModalOpen(true);
-          } else if (activeTab === 'members') {
-            window.dispatchEvent(new CustomEvent('trigger-add-member'));
-          } else if (activeTab === 'team') {
-            window.dispatchEvent(new CustomEvent('trigger-add-team'));
-          }
-        }}
-        className="fixed bottom-12 right-12 w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all z-50 animate-bounce-subtle"
-        title={`Add New ${activeTab}`}
-      >
-        <Plus className="w-8 h-8" />
-      </button>
+      {activeTab !== 'statistics' && (
+        <button
+          onClick={() => {
+            if (activeTab === 'projects') {
+              setEditingProject(null);
+              setIsProjectModalOpen(true);
+            } else if (activeTab === 'tasks') {
+              setIsTaskModalOpen(true);
+            } else if (activeTab === 'members') {
+              window.dispatchEvent(new CustomEvent('trigger-add-member'));
+            } else if (activeTab === 'team') {
+              window.dispatchEvent(new CustomEvent('trigger-add-team'));
+            }
+          }}
+          className="fixed bottom-12 right-12 w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all z-50 animate-bounce-subtle"
+          title={`Add New ${activeTab}`}
+        >
+          <Plus className="w-8 h-8" />
+        </button>
+      )}
 
       <style>{`
           @keyframes bounce-subtle {

@@ -4,6 +4,7 @@ import { AuthService } from '../services';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<boolean>;
+  signup: (credentials: LoginCredentials & { email: string; name: string }) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
 }
@@ -47,6 +48,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const signup = async (credentials: LoginCredentials & { email: string; name: string }): Promise<boolean> => {
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      const { user } = await AuthService.signup(credentials);
+      setAuthState({
+        user,
+        isAuthenticated: true,
+        loading: false,
+        error: null,
+      });
+      return true;
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Signup failed',
+      }));
+      return false;
+    }
+  };
+
   const logout = () => {
     AuthService.logout();
     setAuthState({
@@ -62,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ ...authState, login, logout, clearError }}>
+    <AuthContext.Provider value={{ ...authState, login, signup, logout, clearError }}>
       {children}
     </AuthContext.Provider>
   );

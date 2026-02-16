@@ -413,11 +413,9 @@ const MembersView: React.FC<MembersViewProps> = ({
     }, []);
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-4 animate-in fade-in duration-500">
             <div className="flex justify-between items-end">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-black text-slate-800 tracking-tight uppercase leading-none">{t('members.title')}</h2>
-                    <p className="text-slate-400 font-bold text-sm tracking-tight">{t('members.subtitle')}</p>
                 </div>
             </div>
 

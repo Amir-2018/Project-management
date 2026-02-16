@@ -57,8 +57,8 @@ const ContactView: React.FC = () => {
 
                     <div className="space-y-8">
                         {[
-                            { icon: <Mail className="w-5 h-5" />, label: 'Email', value: 'hello@camping-mgmt.com' },
-                            { icon: <Phone className="w-5 h-5" />, label: 'Phone', value: '+1 (555) 000-1234' },
+                            { icon: <Mail className="w-5 h-5" />, label: 'Email', value: 'amir.maalaoui@ngi.tn' },
+                            { icon: <Phone className="w-5 h-5" />, label: 'Phone', value: '+216 93 379 344' },
                             { icon: <MapPin className="w-5 h-5" />, label: 'Office', value: '123 Strategy Blvd, Silicon Valley, CA' }
                         ].map((item, i) => (
                             <div key={i} className="flex items-center gap-6 group">

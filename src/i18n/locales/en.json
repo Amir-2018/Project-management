@@ -8,7 +8,8 @@
         "profile": "Profile",
         "member": "Member",
         "admin": "Admin",
-        "my_tasks": "My Tasks"
+        "my_tasks": "My Tasks",
+        "Tasks":"Tasks"
     },
     "sidebar": {
         "nav_main": "Main Navigation"

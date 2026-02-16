@@ -4,26 +4,41 @@ import { useAuth } from '../context/AuthContext';
 import { APP_NAME } from '../constants';
 
 const LoginView: React.FC = () => {
+  const [isLogin, setIsLogin] = useState<boolean>(true);
   const [username, setUsername] = useState<string>('');
+  const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const { login, loading } = useAuth();
+  const { login, signup, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!username || !password) {
-      setError('Please enter both username and password');
-      return;
-    }
+    if (isLogin) {
+      if (!username || !password) {
+        setError('Please enter both username and password');
+        return;
+      }
 
-    const success = await login({ username, password });
-    if (success) {
-      navigate('/dashboard');
+      const success = await login({ username, password });
+      if (success) {
+        navigate('/dashboard');
+      } else {
+        setError('Invalid credentials');
+      }
     } else {
-      setError('Invalid credentials');
+      if (!username || !password || !email || !name) {
+        setError('Please fill in all fields');
+        return;
+      }
+
+      const success = await signup({ username, password, email, name });
+      if (success) {
+        navigate('/dashboard');
+      }
     }
   };
 
@@ -80,8 +95,14 @@ const LoginView: React.FC = () => {
 
         <div className="max-w-md w-full animate-in slide-in-from-right-12 fade-in duration-1000">
           <div className="mb-12">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Welcome Back</h1>
-            <p className="text-slate-400 font-medium leading-relaxed">Enter your secure credentials to verify your identity and access your team's workspace.</p>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-4">
+              {isLogin ? 'Welcome Back' : 'Create Admin Account'}
+            </h1>
+            <p className="text-slate-400 font-medium leading-relaxed">
+              {isLogin 
+                ? 'Enter your secure credentials to verify your identity and access your team\'s workspace.' 
+                : 'Register a new administrator account to start managing your team and projects.'}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -89,6 +110,33 @@ const LoginView: React.FC = () => {
               <div className="bg-red-50 text-red-600 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center border border-red-100 shadow-sm animate-shake">
                 {error}
               </div>
+            )}
+
+            {!isLogin && (
+              <>
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Full Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="John Doe"
+                    className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all placeholder:text-slate-300 shadow-inner"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Email Address</label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@example.com"
+                    className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all placeholder:text-slate-300 shadow-inner"
+                  />
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
@@ -122,10 +170,24 @@ const LoginView: React.FC = () => {
               disabled={loading}
               className="w-full bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-indigo-600 hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] mt-4 h-16 flex items-center justify-center overflow-hidden relative group"
             >
-              <span className="relative z-10">{loading ? 'Verifying Identity...' : 'Authorize Login'}</span>
+              <span className="relative z-10">
+                {loading ? 'Processing...' : (isLogin ? 'Authorize Login' : 'Create Admin Account')}
+              </span>
               <div className="absolute inset-0 bg-indigo-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </button>
           </form>
+
+          <div className="mt-8 text-center">
+            <button 
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+              }}
+              className="text-xs font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 transition-colors"
+            >
+              {isLogin ? 'Don\'t have an account? Sign up as Admin' : 'Already have an account? Log in'}
+            </button>
+          </div>
 
           <div className="mt-16 pt-10 border-t border-slate-50 text-center flex flex-col gap-6">
             <div className="flex items-center justify-center gap-4">
