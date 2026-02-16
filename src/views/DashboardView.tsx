@@ -153,17 +153,22 @@ const ProjectModal: React.FC<{
   };
 
 // Sidebar component
-const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void }> = ({
+const Sidebar: React.FC<{ activeTab: string; setActiveTab: (tab: string) => void; role?: string }> = ({
   activeTab,
-  setActiveTab
+  setActiveTab,
+  role = 'Admin'
 }) => {
   const { t } = useTranslation();
-  const navItems = [
-    { id: 'projects', icon: <Layout className="w-5 h-5" />, label: t('common.projects') },
-    { id: 'members', icon: <Users className="w-5 h-5" />, label: t('common.members') },
-    { id: 'team', icon: <Globe className="w-5 h-5" />, label: t('common.team') },
-    { id: 'statistics', icon: <BarChart3 className="w-5 h-5" />, label: t('common.statistics') },
+
+  const allNavItems = [
+    { id: 'projects', icon: <Layout className="w-5 h-5" />, label: t('common.projects'), roles: ['Admin', 'Member'] },
+    { id: 'my-tasks', icon: <CheckCircle2 className="w-5 h-5" />, label: t('common.my_tasks'), roles: ['Member'] },
+    { id: 'members', icon: <Users className="w-5 h-5" />, label: t('common.members'), roles: ['Admin'] },
+    { id: 'team', icon: <Globe className="w-5 h-5" />, label: t('common.team'), roles: ['Admin'] },
+    { id: 'statistics', icon: <BarChart3 className="w-5 h-5" />, label: t('common.statistics'), roles: ['Admin', 'Member'] },
   ];
+
+  const navItems = allNavItems.filter(item => item.roles.includes(role));
 
   return (
     <aside className="w-64 bg-indigo-600 text-white flex flex-col fixed h-screen shadow-2xl z-20">
@@ -282,9 +287,17 @@ const DashboardView: React.FC = () => {
     setActiveTab('projects');
   };
 
+  const filteredProjects = user?.role === 'Admin'
+    ? allProjects
+    : allProjects.filter(p => p.memberIds?.some(mid => members.find(m => m.id === mid)?.email === user?.email));
+
+  const userTasks = user?.role === 'Admin'
+    ? tasks
+    : tasks.filter(t => members.find(m => m.id === t.assignee)?.email === user?.email);
+
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} role={user?.role} />
 
       <main className="flex-1 ml-64 p-12">
         <header className="flex justify-between items-center mb-12">
@@ -362,7 +375,9 @@ const DashboardView: React.FC = () => {
                 </div>
                 <div className="text-left">
                   <div className="text-sm font-black text-slate-800 tracking-tight">{user?.username}</div>
-                  <div className="text-[10px] font-black text-indigo-500 uppercase tracking-widest leading-none mt-1">Superadmin</div>
+                  <div className="text-[10px] font-black text-indigo-500 uppercase tracking-widest leading-none mt-1">
+                    {user?.role === 'Admin' ? 'Superadmin' : t('common.member')}
+                  </div>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -415,7 +430,7 @@ const DashboardView: React.FC = () => {
         <div className="w-full">
           {activeTab === 'projects' && (
             <ProjectsView
-              projects={allProjects}
+              projects={filteredProjects}
               onAddProject={() => { setEditingProject(null); setIsProjectModalOpen(true); }}
               onProjectClick={handleProjectClick}
               onEditProject={(p) => { setEditingProject(p); setIsProjectModalOpen(true); }}
@@ -438,6 +453,24 @@ const DashboardView: React.FC = () => {
               })}
               onDeleteTask={deleteTask}
               onBack={handleBackToProjects}
+            />
+          )}
+
+          {activeTab === 'my-tasks' && (
+            <TasksView
+              tasks={userTasks}
+              onAddTask={() => { }} // Members might not be able to add tasks globally
+              onUpdateStatus={updateTaskStatus}
+              onUpdateTask={updateTask}
+              onAddComment={(taskId, text) => addComment(taskId, user?.username || 'user', user?.username || 'User', text)}
+              onAddAttachment={(taskId, file) => addAttachment(taskId, {
+                name: file.name,
+                type: file.type.split('/')[1] || 'bin',
+                size: file.size,
+                url: '#'
+              })}
+              onDeleteTask={deleteTask}
+              onBack={() => setActiveTab('projects')}
             />
           )}
 
@@ -468,8 +501,8 @@ const DashboardView: React.FC = () => {
 
           {activeTab === 'statistics' && (
             <StatisticsView
-              projects={allProjects}
-              tasks={tasks}
+              projects={filteredProjects}
+              tasks={userTasks}
             />
           )}
         </div>

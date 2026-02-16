@@ -5,7 +5,10 @@
         "statistics": "Statistics",
         "members": "Members",
         "logout": "Logout",
-        "profile": "Profile"
+        "profile": "Profile",
+        "member": "Member",
+        "admin": "Admin",
+        "my_tasks": "My Tasks"
     },
     "sidebar": {
         "nav_main": "Main Navigation"

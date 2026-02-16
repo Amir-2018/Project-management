@@ -9,21 +9,23 @@ export class AuthService {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     if (credentials.username && credentials.password) {
+      const role = credentials.username.toLowerCase().includes('member') ? 'Member' : 'Admin';
       const user: User = {
         username: credentials.username,
         email: `${credentials.username}@example.com`,
         avatar: credentials.username.charAt(0).toUpperCase(),
+        role: role,
       };
-      
-      const token = btoa(JSON.stringify({ username: credentials.username, timestamp: Date.now() }));
-      
+
+      const token = btoa(JSON.stringify({ username: credentials.username, role: user.role, timestamp: Date.now() }));
+
       // Store in localStorage
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-      
+
       return { user, token };
     }
-    
+
     throw new Error('Invalid credentials');
   }
 
