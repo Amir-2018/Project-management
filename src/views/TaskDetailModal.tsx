@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { X, Upload, FileText, Send, Calendar, User, Tag, ArrowUpCircle, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Task, Comment, Attachment } from '../models';
+import { Task, Comment, Attachment, Member } from '../models';
 
 interface TaskDetailModalProps {
     task: Task;
+    members: Member[];
     isOpen: boolean;
     onClose: () => void;
     onAddComment: (text: string) => void;
@@ -16,6 +17,7 @@ interface TaskDetailModalProps {
 
 const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     task,
+    members,
     isOpen,
     onClose,
     onAddComment,
@@ -29,8 +31,10 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     const [editTitle, setEditTitle] = useState(task.title);
     const [editDescription, setEditDescription] = useState(task.description);
     const [editAssignee, setEditAssignee] = useState(task.assignee);
+    const [editPriority, setEditPriority] = useState(task.priority);
     const [newComment, setNewComment] = useState('');
     const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     // Sync state when task changes or modal opens
     React.useEffect(() => {
@@ -38,6 +42,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             setEditTitle(task.title);
             setEditDescription(task.description);
             setEditAssignee(task.assignee);
+            setEditPriority(task.priority);
             setIsEditing(false);
         }
     }, [isOpen, task]);
@@ -48,7 +53,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         onUpdateTask({
             title: editTitle,
             description: editDescription,
-            assignee: editAssignee
+            assignee: editAssignee,
+            priority: editPriority
         });
         setIsEditing(false);
     };
@@ -78,12 +84,31 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 <div className="p-8 border-b border-slate-50 flex justify-between items-start bg-slate-50/30">
                     <div className="space-y-4 flex-1 mr-8">
                         <div className="flex items-center gap-3">
-                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 ${task.priority === 'High' ? 'bg-red-50 text-red-600' :
-                                task.priority === 'Medium' ? 'bg-yellow-50 text-yellow-600' :
-                                    'bg-blue-50 text-blue-600'
-                                }`}>
-                                <Tag className="w-3 h-3" /> {task.priority} {t('modals.detail.priority_suffix')}
-                            </span>
+                            {isEditing ? (
+                                <div className="relative">
+                                    <select
+                                        value={editPriority}
+                                        onChange={(e) => setEditPriority(e.target.value as any)}
+                                        className="appearance-none px-4 py-2 pr-10 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 bg-white focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer"
+                                    >
+                                        <option value="Highest">{t('tasks.priority.highest')}</option>
+                                        <option value="High">{t('tasks.priority.high')}</option>
+                                        <option value="Medium">{t('tasks.priority.medium')}</option>
+                                        <option value="Low">{t('tasks.priority.low')}</option>
+                                        <option value="Lowest">{t('tasks.priority.lowest')}</option>
+                                    </select>
+                                    <Tag className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                                </div>
+                            ) : (
+                                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 ${task.priority === 'Highest' ? 'bg-rose-50 text-rose-600' :
+                                    task.priority === 'High' ? 'bg-red-50 text-red-600' :
+                                        task.priority === 'Medium' ? 'bg-amber-50 text-amber-600' :
+                                            task.priority === 'Low' ? 'bg-emerald-50 text-emerald-600' :
+                                                'bg-slate-50 text-slate-600'
+                                    }`}>
+                                    <Tag className="w-3 h-3" /> {t(`tasks.priority.${task.priority.toLowerCase()}`)} {t('modals.detail.priority_suffix')}
+                                </span>
+                            )}
                             <span className="text-slate-300 font-black text-[10px] uppercase tracking-widest">#TASK-{task.id}</span>
                         </div>
                         {isEditing ? (
@@ -139,13 +164,19 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         <section>
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">{t('modals.task.assign_to')}</h3>
                             {isEditing ? (
-                                <input
-                                    type="text"
-                                    value={editAssignee}
-                                    onChange={(e) => setEditAssignee(e.target.value)}
-                                    className="w-full bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 rounded-xl px-4 py-2 text-sm font-bold text-slate-700"
-                                    placeholder={t('modals.task.title_placeholder')}
-                                />
+                                <div className="relative w-fit">
+                                    <select
+                                        value={editAssignee}
+                                        onChange={(e) => setEditAssignee(e.target.value)}
+                                        className="appearance-none w-full min-w-[200px] bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 rounded-xl px-6 py-4 pr-12 text-sm font-bold text-slate-700 uppercase tracking-tight cursor-pointer transition-all"
+                                    >
+                                        <option value="">{t('modals.task.unassigned')}</option>
+                                        {members.map(member => (
+                                            <option key={member.id} value={member.name}>{member.name}</option>
+                                        ))}
+                                    </select>
+                                    <User className="w-4 h-4 absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                                </div>
                             ) : (
                                 <div className="flex items-center gap-3 bg-white p-4 rounded-2xl border border-slate-50 w-fit">
                                     <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-sm uppercase">
@@ -164,9 +195,21 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                                 onDragOver={handleDragOver}
                                 onDragLeave={handleDragLeave}
                                 onDrop={handleDrop}
-                                className={`border-2 border-dashed rounded-[2rem] p-12 flex flex-col items-center justify-center transition-all duration-300 ${isDragging ? 'border-indigo-500 bg-indigo-50/50 scale-[0.98]' : 'border-slate-100 hover:border-indigo-200 bg-slate-50/30 hover:bg-white hover:shadow-xl hover:shadow-indigo-50'
+                                onClick={() => fileInputRef.current?.click()}
+                                className={`border-2 border-dashed rounded-[2rem] p-12 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer ${isDragging ? 'border-indigo-500 bg-indigo-50/50 scale-[0.98]' : 'border-slate-100 hover:border-indigo-200 bg-slate-50/30 hover:bg-white hover:shadow-xl hover:shadow-indigo-50'
                                     }`}
                             >
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={(e) => {
+                                        const files = e.target.files;
+                                        if (files && files.length > 0) {
+                                            onAddAttachment(files[0]);
+                                        }
+                                    }}
+                                    className="hidden"
+                                />
                                 <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-indigo-600 mb-4 shadow-xl shadow-indigo-100/50">
                                     <Upload className="w-8 h-8" />
                                 </div>
@@ -210,67 +253,13 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                                 </div>
                             </section>
 
-                            <section>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('modals.detail.activity')}</h3>
-                                    <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-[9px] font-black">{task.comments.length}</span>
-                                </div>
-                                <div className="space-y-6">
-                                    {task.comments.map((comment) => (
-                                        <div key={comment.id} className="flex gap-4 group/comment">
-                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center text-white text-[10px] font-black shadow-lg shadow-indigo-100">
-                                                {comment.userName.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div className="space-y-2 flex-1">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs font-black text-slate-800 uppercase tracking-tight">{comment.userName}</span>
-                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-tighter flex items-center gap-1">
-                                                        <Calendar className="w-2.5 h-2.5" /> {new Date(comment.createdAt).toLocaleDateString()}
-                                                    </span>
-                                                </div>
-                                                <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 text-sm text-slate-600 font-medium shadow-sm group-hover/comment:shadow-md transition-shadow">
-                                                    {comment.text}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {task.comments.length === 0 && (
-                                        <div className="text-center py-8">
-                                            <Send className="w-8 h-8 text-slate-100 mx-auto mb-3" />
-                                            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{t('modals.detail.no_activity')}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </section>
-                        </div>
 
-                        <div className="mt-8 pt-8 border-t border-slate-100">
-                            <div className="relative">
-                                <textarea
-                                    value={newComment}
-                                    onChange={(e) => setNewComment(e.target.value)}
-                                    placeholder={t('modals.detail.placeholder')}
-                                    className="w-full bg-white border border-slate-100 rounded-[1.5rem] px-6 py-5 text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none resize-none shadow-sm placeholder:text-slate-300 transition-all"
-                                    rows={3}
-                                />
-                                <button
-                                    onClick={() => {
-                                        if (newComment.trim()) {
-                                            onAddComment(newComment);
-                                            setNewComment('');
-                                        }
-                                    }}
-                                    className="mt-3 w-full bg-indigo-600 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 hover:scale-105 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-2 group"
-                                >
-                                    <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> {t('modals.detail.post')}
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    );
+    </div>
+);
 };
 
 export default TaskDetailModal;

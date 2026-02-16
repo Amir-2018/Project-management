@@ -31,6 +31,13 @@
         "no_description": "Aucune description fournie."
     },
     "tasks": {
+        "priority": {
+            "highest": "Très Haute",
+            "high": "Haute",
+            "medium": "Moyenne",
+            "low": "Basse",
+            "lowest": "Très Basse"
+        },
         "board": "Tableau",
         "subtitle": "Visualisez et gérez les tâches de ce projet.",
         "add_new": "Ajouter Nouvelle Tâche",

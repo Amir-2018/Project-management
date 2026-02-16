@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Trash2, Plus, X, UserPlus, Briefcase, ChevronRight } from 'lucide-react';
+import { Users, Trash2, Plus, X, UserPlus, Briefcase, ChevronRight, Edit2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Team, Member, Project } from '../models';
 import { STATUS_COLORS } from '../constants';
@@ -9,26 +9,218 @@ interface TeamViewProps {
     members: Member[];
     projects: Project[];
     onAddTeam: (name: string) => void;
+    onUpdateTeam: (teamId: string, updates: Partial<Team>) => void;
     onDeleteTeam: (id: string) => void;
     onAssignMember: (teamId: string, memberId: string) => void;
     onRemoveMember: (teamId: string, memberId: string) => void;
 }
+
+const TeamModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (name: string, memberIds: string[], projectIds: number[]) => void;
+    initialData?: Team | null;
+    members: Member[];
+    projects: Project[];
+}> = ({ isOpen, onClose, onSubmit, initialData, members, projects }) => {
+    const { t } = useTranslation();
+    const [name, setName] = useState(initialData?.name || '');
+    const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>(initialData?.members.map(m => m.id) || []);
+    const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>(initialData?.projectIds || []);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSubmit(name, selectedMemberIds, selectedProjectIds);
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-10 shadow-3xl animate-in zoom-in duration-300 border border-white/20">
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">
+                            {initialData ? t('team.edit_team') || 'Edit Team' : t('team.create_team')}
+                        </h3>
+                    </div>
+                    <button onClick={onClose} className="text-slate-300 hover:text-slate-900 transition-all p-3 hover:bg-slate-50 rounded-2xl group">
+                        <X className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('team.team_name')}</label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-100 focus:bg-white rounded-2xl focus:ring-4 focus:ring-indigo-500/5 transition-all font-bold text-slate-700 placeholder:text-slate-300"
+                            placeholder={t('team.team_name_placeholder')}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('team.team_members')}</label>
+                        <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-2xl border-2 border-transparent max-h-40 overflow-y-auto">
+                            {members.map(member => (
+                                <label key={member.id} className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-indigo-200 transition-all">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedMemberIds.includes(member.id)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) setSelectedMemberIds([...selectedMemberIds, member.id]);
+                                            else setSelectedMemberIds(selectedMemberIds.filter(id => id !== member.id));
+                                        }}
+                                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{member.name}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('team.allocated_projects')}</label>
+                        <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-2xl border-2 border-transparent max-h-40 overflow-y-auto">
+                            {projects.map(project => (
+                                <label key={project.id} className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-indigo-200 transition-all">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedProjectIds.includes(project.id)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) setSelectedProjectIds([...selectedProjectIds, project.id]);
+                                            else setSelectedProjectIds(selectedProjectIds.filter(id => id !== project.id));
+                                        }}
+                                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{project.name}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full bg-indigo-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-indigo-700 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-indigo-200 mt-4 flex items-center justify-center gap-3"
+                    >
+                        {initialData ? t('common.save') || 'Save Changes' : t('team.create_team')}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const TeamTable: React.FC<{
+    teams: Team[];
+    members: Member[];
+    projects: Project[];
+    onEditTeam: (team: Team) => void;
+    onDeleteTeam: (id: string) => void;
+    onAssignMember: (teamId: string, memberId: string) => void;
+    onRemoveMember: (teamId: string, memberId: string) => void;
+    getProjectsForTeam: (projectIds: number[]) => Project[];
+}> = ({ teams, members, projects, onEditTeam, onDeleteTeam, onAssignMember, onRemoveMember, getProjectsForTeam }) => {
+    const { t } = useTranslation();
+
+    return (
+        <div className="bg-white rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="w-full text-left border-separate border-spacing-0">
+                    <thead>
+                        <tr className="bg-slate-50/50">
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">{t('team.team_name')}</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">{t('team.members')}</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">{t('team.allocated_projects')}</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                        {teams.map((team) => (
+                            <tr key={team.id} className="hover:bg-indigo-50/30 transition-all duration-300 group">
+                                <td className="px-8 py-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg font-black shadow-lg shadow-indigo-100 group-hover:scale-110 transition-transform">
+                                            {team.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-black text-slate-800 uppercase tracking-tight">{team.name}</div>
+                                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{team.members.length} {t('team.members')}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-8 py-6">
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {team.members.map(member => (
+                                            <span key={member.id} className="px-2.5 py-1 bg-slate-50 text-slate-600 rounded-lg border border-slate-100 text-[9px] font-black uppercase tracking-widest">
+                                                {member.name}
+                                            </span>
+                                        ))}
+                                        {team.members.length === 0 && (
+                                            <span className="text-[10px] font-bold text-slate-300 uppercase italic tracking-widest">{t('team.no_members_team')}</span>
+                                        )}
+                                    </div>
+                                </td>
+                                <td className="px-8 py-6">
+                                    <div className="flex flex-wrap gap-2">
+                                        {getProjectsForTeam(team.projectIds).map(project => (
+                                            <span key={project.id} className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${STATUS_COLORS[project.status]}`}>
+                                                {project.name}
+                                            </span>
+                                        ))}
+                                        {team.projectIds.length === 0 && (
+                                            <span className="text-[10px] font-bold text-slate-300 uppercase italic tracking-widest">{t('team.no_projects')}</span>
+                                        )}
+                                    </div>
+                                </td>
+                                <td className="px-8 py-6 text-right">
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            onClick={() => onEditTeam(team)}
+                                            className="p-2.5 bg-white shadow-sm border border-slate-100 rounded-xl text-slate-400 hover:text-indigo-600 hover:scale-110 transition-all opacity-0 group-hover:opacity-100"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => onDeleteTeam(team.id)}
+                                            className="p-2.5 bg-white shadow-sm border border-slate-100 rounded-xl text-slate-400 hover:text-red-500 hover:scale-110 transition-all opacity-0 group-hover:opacity-100"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
 
 const TeamView: React.FC<TeamViewProps> = ({
     teams,
     members,
     projects,
     onAddTeam,
+    onUpdateTeam,
     onDeleteTeam,
     onAssignMember,
     onRemoveMember
 }) => {
     const { t } = useTranslation();
-    const [newTeamName, setNewTeamName] = useState('');
-    const [showAddTeam, setShowAddTeam] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingTeam, setEditingTeam] = useState<Team | null>(null);
 
     React.useEffect(() => {
-        const handler = () => setShowAddTeam(true);
+        const handler = () => {
+            setEditingTeam(null);
+            setIsModalOpen(true);
+        };
         window.addEventListener('trigger-add-team', handler);
         return () => window.removeEventListener('trigger-add-team', handler);
     }, []);
@@ -44,127 +236,47 @@ const TeamView: React.FC<TeamViewProps> = ({
                 </div>
             </div>
 
-            {showAddTeam && (
-                <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-indigo-100 flex gap-4 items-center animate-in slide-in-from-top-4 duration-300">
-                    <input
-                        autoFocus
-                        type="text"
-                        value={newTeamName}
-                        onChange={(e) => setNewTeamName(e.target.value)}
-                        placeholder={t('team.team_name_placeholder')}
-                        className="flex-1 px-6 py-4 rounded-2xl border border-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all font-medium"
-                    />
-                    <button
-                        onClick={() => {
-                            if (newTeamName) {
-                                onAddTeam(newTeamName);
-                                setNewTeamName('');
-                                setShowAddTeam(false);
-                            }
-                        }}
-                        className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 hover:scale-105 transition-all shadow-lg shadow-indigo-200"
-                    >
-                        {t('team.create_team')}
-                    </button>
-                    <button
-                        onClick={() => setShowAddTeam(false)}
-                        className="p-4 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                        <X className="w-6 h-6" />
-                    </button>
-                </div>
+            <TeamTable
+                teams={teams}
+                members={members}
+                projects={projects}
+                onEditTeam={(team) => {
+                    setEditingTeam(team);
+                    setIsModalOpen(true);
+                }}
+                onDeleteTeam={onDeleteTeam}
+                onAssignMember={onAssignMember}
+                onRemoveMember={onRemoveMember}
+                getProjectsForTeam={getProjectsForTeam}
+            />
+
+            {isModalOpen && (
+                <TeamModal
+                    isOpen={isModalOpen}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setEditingTeam(null);
+                    }}
+                    members={members}
+                    projects={projects}
+                    initialData={editingTeam}
+                    onSubmit={(name, memberIds, projectIds) => {
+                        if (editingTeam) {
+                            onUpdateTeam(editingTeam.id, { name, projectIds });
+                            // Update member assignments
+                            members.forEach(m => {
+                                const isAssigned = editingTeam.members.some(tm => tm.id === m.id);
+                                const shouldBeAssigned = memberIds.includes(m.id);
+                                if (shouldBeAssigned && !isAssigned) onAssignMember(editingTeam.id, m.id);
+                                if (!shouldBeAssigned && isAssigned) onRemoveMember(editingTeam.id, m.id);
+                            });
+                        } else {
+                            onAddTeam(name);
+                            // Initial assignments would happen after creation in a real scenario
+                        }
+                    }}
+                />
             )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {teams.map(team => (
-                    <div key={team.id} className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden flex flex-col group/team hover:shadow-2xl transition-all duration-500">
-                        <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-                            <div>
-                                <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">{team.name} Team</h3>
-                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-2 flex items-center gap-2">
-                                    <Users className="w-3 h-3" /> {team.members.length} {t('team.members')}
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => onDeleteTeam(team.id)}
-                                className="p-3 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all opacity-0 group-hover/team:opacity-100"
-                            >
-                                <Trash2 className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="p-8 space-y-8 flex-1">
-                            <div>
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                                    <Briefcase className="w-3 h-3" /> {t('team.allocated_projects')}
-                                </h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {getProjectsForTeam(team.projectIds).map(project => (
-                                        <div key={project.id} className="group relative">
-                                            <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${STATUS_COLORS[project.status]} flex items-center gap-2`}>
-                                                <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
-                                                {project.name}
-                                            </span>
-                                        </div>
-                                    ))}
-                                    {team.projectIds.length === 0 && (
-                                        <p className="text-xs text-slate-300 italic font-medium">{t('team.no_projects')}</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <UserPlus className="w-3 h-3" /> {t('team.team_members')}
-                                    </h4>
-                                    <div className="relative">
-                                        <select
-                                            className="appearance-none text-[10px] bg-indigo-50 text-indigo-600 font-black px-4 py-2 pr-8 rounded-xl outline-none cursor-pointer border-none uppercase tracking-widest hover:bg-indigo-100 transition-colors"
-                                            onChange={(e) => {
-                                                if (e.target.value) {
-                                                    onAssignMember(team.id, e.target.value);
-                                                    e.target.value = '';
-                                                }
-                                            }}
-                                        >
-                                            <option value="">{t('team.add_member')}</option>
-                                            {members.filter(m => !team.members.some(tm => tm.id === m.id)).map(m => (
-                                                <option key={m.id} value={m.id}>{m.name}</option>
-                                            ))}
-                                        </select>
-                                        <ChevronRight className="w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-indigo-400 pointer-events-none" />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 gap-3">
-                                    {team.members.map(member => (
-                                        <div key={member.id} className="flex justify-between items-center p-4 rounded-2xl border border-slate-50 hover:border-indigo-100 hover:bg-indigo-50/20 transition-all group/member">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-[10px] font-black shadow-lg shadow-indigo-100">
-                                                    {member.name.substring(0, 2).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-black text-slate-800 uppercase tracking-tight">{member.name}</div>
-                                                    <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">{member.role}</div>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => onRemoveMember(team.id, member.id)}
-                                                className="opacity-0 group-hover/member:opacity-100 p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    {team.members.length === 0 && (
-                                        <p className="text-xs text-slate-300 italic font-medium">{t('team.no_members_team')}</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
         </div>
     );
 };

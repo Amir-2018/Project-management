@@ -21,12 +21,14 @@ const ProjectModal: React.FC<{
   onSubmit: (project: Omit<Project, 'id'>) => void;
   initialData?: Project | null;
   members: Member[];
+  teams: Team[];
 }> = ({
   isOpen,
   onClose,
   onSubmit,
   initialData,
-  members
+  members,
+  teams
 }) => {
     const { t } = useTranslation();
     const [name, setName] = useState(initialData?.name || '');
@@ -34,6 +36,7 @@ const ProjectModal: React.FC<{
     const [status, setStatus] = useState<ProjectStatus>(initialData?.status || 'Planning');
     const [dueDate, setDueDate] = useState(initialData?.dueDate || '');
     const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>(initialData?.memberIds || []);
+    const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>(initialData?.teamIds || []);
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -43,7 +46,8 @@ const ProjectModal: React.FC<{
         status,
         progress: initialData?.progress || 0,
         dueDate,
-        memberIds: selectedMemberIds
+        memberIds: selectedMemberIds,
+        teamIds: selectedTeamIds
       });
       onClose();
     };
@@ -131,6 +135,29 @@ const ProjectModal: React.FC<{
               </div>
             </div>
 
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-700">{t('modals.project.assign_teams') || 'Assign Teams'}</label>
+              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto p-2 border border-gray-100 rounded-xl">
+                {teams.map(team => (
+                  <label key={team.id} className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={selectedTeamIds.includes(team.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedTeamIds([...selectedTeamIds, team.id]);
+                        } else {
+                          setSelectedTeamIds(selectedTeamIds.filter(id => id !== team.id));
+                        }
+                      }}
+                      className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-xs font-medium text-gray-700">{team.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
@@ -205,6 +232,7 @@ const DashboardView: React.FC = () => {
     members,
     addTeam,
     deleteTeam,
+    updateTeam,
     assignMember,
     removeMember,
     addMember,
@@ -441,6 +469,7 @@ const DashboardView: React.FC = () => {
           {activeTab === 'tasks' && selectedProjectId && (
             <TasksView
               tasks={tasks.filter(t => t.projectId === selectedProjectId)}
+              members={members}
               onAddTask={() => setIsTaskModalOpen(true)}
               onUpdateStatus={updateTaskStatus}
               onUpdateTask={updateTask}
@@ -459,6 +488,7 @@ const DashboardView: React.FC = () => {
           {activeTab === 'my-tasks' && (
             <TasksView
               tasks={userTasks}
+              members={members}
               onAddTask={() => { }} // Members might not be able to add tasks globally
               onUpdateStatus={updateTaskStatus}
               onUpdateTask={updateTask}
@@ -480,6 +510,7 @@ const DashboardView: React.FC = () => {
               members={members}
               projects={allProjects}
               onAddTeam={addTeam}
+              onUpdateTeam={updateTeam}
               onDeleteTeam={deleteTeam}
               onAssignMember={assignMember}
               onRemoveMember={removeMember}
@@ -513,6 +544,7 @@ const DashboardView: React.FC = () => {
           isOpen={isProjectModalOpen}
           initialData={editingProject}
           members={members}
+          teams={teams}
           onClose={() => { setIsProjectModalOpen(false); setEditingProject(null); }}
           onSubmit={handleProjectSubmit}
         />

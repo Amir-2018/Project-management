@@ -14,7 +14,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
     const { t } = useTranslation();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
+    const [priority, setPriority] = useState<'Highest' | 'High' | 'Medium' | 'Low' | 'Lowest'>('Medium');
     const [status, setStatus] = useState<TaskStatus>('To Do');
     const [assigneeId, setAssigneeId] = useState('');
 
@@ -87,9 +87,11 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSu
                                     onChange={(e) => setPriority(e.target.value as any)}
                                     className="w-full px-6 py-4 rounded-2xl border border-slate-100 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all font-black text-[10px] uppercase tracking-widest appearance-none bg-white cursor-pointer"
                                 >
-                                    <option value="Low">{t('tasks.todo')}</option>
-                                    <option value="Medium">{t('tasks.in_progress')}</option>
-                                    <option value="High">{t('tasks.done')}</option>
+                                    <option value="Highest">{t('tasks.priority.highest')}</option>
+                                    <option value="High">{t('tasks.priority.high')}</option>
+                                    <option value="Medium">{t('tasks.priority.medium')}</option>
+                                    <option value="Low">{t('tasks.priority.low')}</option>
+                                    <option value="Lowest">{t('tasks.priority.lowest')}</option>
                                 </select>
                                 <Tag className="w-3.5 h-3.5 absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
                             </div>

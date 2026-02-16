@@ -7,6 +7,7 @@ import ConfirmModal from './ConfirmModal';
 
 interface TasksViewProps {
     tasks: Task[];
+    members: Member[];
     onAddTask: () => void;
     onUpdateStatus: (taskId: string, status: TaskStatus) => void;
     onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
@@ -18,6 +19,7 @@ interface TasksViewProps {
 
 const TasksView: React.FC<TasksViewProps> = ({
     tasks,
+    members,
     onAddTask,
     onUpdateStatus,
     onUpdateTask,
@@ -80,16 +82,8 @@ const TasksView: React.FC<TasksViewProps> = ({
         <div className="h-full flex flex-col space-y-6">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                    <button
-                        onClick={onBack}
-                        className="p-2 hover:bg-indigo-50 rounded-full transition-all text-indigo-600 group"
-                        title={t('tasks.back')}
-                    >
-                        <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
-                    </button>
+                
                     <div>
-                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">{t('tasks.board')}</h2>
-                        <p className="text-slate-400 font-medium text-sm">{t('tasks.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -128,11 +122,13 @@ const TasksView: React.FC<TasksViewProps> = ({
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-3">
-                                            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${task.priority === 'High' ? 'bg-red-50 text-red-600' :
-                                                task.priority === 'Medium' ? 'bg-yellow-50 text-yellow-600' :
-                                                    'bg-blue-50 text-blue-600'
+                                            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${task.priority === 'Highest' ? 'bg-rose-50 text-rose-600' :
+                                                task.priority === 'High' ? 'bg-red-50 text-red-600' :
+                                                    task.priority === 'Medium' ? 'bg-amber-50 text-amber-600' :
+                                                        task.priority === 'Low' ? 'bg-emerald-50 text-emerald-600' :
+                                                            'bg-slate-50 text-slate-600'
                                                 }`}>
-                                                {task.priority}
+                                                {t(`tasks.priority.${task.priority.toLowerCase()}`)}
                                             </span>
                                             <button
                                                 onClick={(e) => {
@@ -188,6 +184,7 @@ const TasksView: React.FC<TasksViewProps> = ({
                 selectedTask && (
                     <TaskDetailModal
                         task={selectedTask}
+                        members={members}
                         isOpen={!!selectedTask}
                         onClose={() => setSelectedTask(null)}
                         onAddComment={(text) => onAddComment(selectedTask.id, text)}

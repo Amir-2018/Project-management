@@ -20,7 +20,7 @@ const ProjectsView: React.FC<ProjectsViewProps> = ({
     onDeleteProject
 }) => {
     const { t } = useTranslation();
-    const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+    const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">

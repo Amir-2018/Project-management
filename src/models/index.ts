@@ -37,6 +37,7 @@ export interface Project {
   endDate?: string;
   description?: string;
   memberIds?: string[];
+  teamIds?: string[];
 }
 
 // Project status enum
@@ -71,7 +72,7 @@ export interface Task {
   title: string;
   description: string;
   status: TaskStatus;
-  priority: 'Low' | 'Medium' | 'High';
+  priority: 'Highest' | 'High' | 'Medium' | 'Low' | 'Lowest';
   assignee?: string;
   dueDate?: string;
   attachments: Attachment[];

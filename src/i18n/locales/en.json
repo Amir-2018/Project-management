@@ -31,6 +31,13 @@
         "no_description": "No description provided."
     },
     "tasks": {
+        "priority": {
+            "highest": "Highest",
+            "high": "High",
+            "medium": "Medium",
+            "low": "Low",
+            "lowest": "Lowest"
+        },
         "board": "Board",
         "subtitle": "Visualize and manage tasks for this project.",
         "add_new": "Add New Task",
