@@ -5,124 +5,95 @@ import { STORAGE_KEYS } from '../constants';
 export class AuthService {
   // Simulated login - in production, this would call an API
   static async login(credentials: LoginCredentials): Promise<{ user: User; token: string }> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Call backend API to login
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: credentials.username, // backend expects email
+          password: credentials.password,
+        }),
+      });
 
-    // Admin fallback or check for specific admin credentials
-    if (credentials.username === 'admin' && credentials.password === 'admin') {
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid credentials');
+      }
+
+      // Store user data and token from backend response
       const user: User = {
-        username: 'admin',
-        email: 'admin@example.com',
-        avatar: 'A',
-        role: 'Admin',
+        username: data.name,
+        email: data.email,
+        avatar: data.name.charAt(0).toUpperCase(),
+        role: data.role === 'admin' ? 'Admin' : data.role === 'manager' ? 'Manager' : 'Member',
       };
 
-      const token = btoa(JSON.stringify({ username: credentials.username, role: user.role, timestamp: Date.now() }));
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-      return { user, token };
-    }
 
-    // Check registered admins in localStorage
-    const adminsData = localStorage.getItem('camping_management_admins');
-    if (adminsData) {
-      const admins: any[] = JSON.parse(adminsData);
-      const admin = admins.find(a => (a.email === credentials.username || a.username === credentials.username) && a.password === credentials.password);
-      if (admin) {
+      return { user, token: data.token };
+    } catch (error: any) {
+      // Fallback to default admin for development
+      if (credentials.username === 'admin' && credentials.password === 'admin') {
         const user: User = {
-          username: admin.username,
-          email: admin.email,
-          avatar: admin.name.charAt(0).toUpperCase(),
+          username: 'admin',
+          email: 'admin@example.com',
+          avatar: 'A',
           role: 'Admin',
         };
 
-        const token = btoa(JSON.stringify({ username: admin.username, role: user.role, timestamp: Date.now() }));
+        const token = btoa(JSON.stringify({ username: credentials.username, role: user.role, timestamp: Date.now() }));
         localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
         return { user, token };
       }
+
+      throw new Error(error.message || 'Invalid credentials');
     }
-
-    // Check members in localStorage
-    const membersData = localStorage.getItem('camping_management_members');
-    if (membersData) {
-      const members: any[] = JSON.parse(membersData);
-      const member = members.find(m => (m.email === credentials.username || m.username === credentials.username) && m.password === credentials.password);
-
-      if (member) {
-        const user: User = {
-          username: member.name,
-          email: member.email,
-          avatar: member.name.charAt(0).toUpperCase(),
-          role: 'Member',
-        };
-
-        const token = btoa(JSON.stringify({ username: member.email, role: user.role, timestamp: Date.now() }));
-        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-        return { user, token };
-      }
-    }
-
-    // Original simulated logic for any other combinations (optional, or just throw error)
-    if (credentials.username && credentials.password && credentials.password === 'password123') {
-      const role = credentials.username.toLowerCase().includes('member') ? 'Member' : 'Admin';
-      const user: User = {
-        username: credentials.username,
-        email: `${credentials.username}@example.com`,
-        avatar: credentials.username.charAt(0).toUpperCase(),
-        role: role,
-      };
-
-      const token = btoa(JSON.stringify({ username: credentials.username, role: user.role, timestamp: Date.now() }));
-
-      // Store in localStorage
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-
-      return { user, token };
-    }
-
-    throw new Error('Invalid credentials');
   }
 
   // Signup user
   static async signup(credentials: LoginCredentials & { email: string; name: string }): Promise<{ user: User; token: string }> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Call backend API to register admin
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: credentials.name,
+          email: credentials.email,
+          password: credentials.password,
+          role: 'admin'
+        }),
+      });
 
-    // For this demo, we'll store admins in a separate localStorage key or just use the same logic
-    const adminsData = localStorage.getItem('camping_management_admins');
-    let admins: any[] = adminsData ? JSON.parse(adminsData) : [];
+      const data = await response.json();
 
-    // Check if user already exists
-    if (admins.find(a => a.username === credentials.username || a.email === credentials.email)) {
-      throw new Error('User already exists');
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create account');
+      }
+
+      // Store user data and token from backend response
+      const user: User = {
+        username: data.name,
+        email: data.email,
+        avatar: data.name.charAt(0).toUpperCase(),
+        role: 'Admin',
+      };
+
+      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+
+      return { user, token: data.token };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to create account');
     }
-
-    const newUser = {
-      username: credentials.username,
-      email: credentials.email,
-      name: credentials.name,
-      password: credentials.password,
-      role: 'Admin'
-    };
-
-    admins.push(newUser);
-    localStorage.setItem('camping_management_admins', JSON.stringify(admins));
-
-    const user: User = {
-      username: credentials.username,
-      email: credentials.email,
-      avatar: credentials.name.charAt(0).toUpperCase(),
-      role: 'Admin',
-    };
-
-    const token = btoa(JSON.stringify({ username: credentials.username, role: user.role, timestamp: Date.now() }));
-    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-
-    return { user, token };
   }
 
   // Logout user
