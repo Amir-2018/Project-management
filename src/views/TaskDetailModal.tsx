@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Upload, FileText, Send, Calendar, User, Tag, ArrowUpCircle } from 'lucide-react';
+import { X, Upload, FileText, Send, Calendar, User, Tag, ArrowUpCircle, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Task, Comment, Attachment } from '../models';
 
@@ -11,6 +11,7 @@ interface TaskDetailModalProps {
     onAddAttachment: (file: File) => void;
     onUpdateStatus: (status: Task['status']) => void;
     onUpdateTask: (updates: Partial<Task>) => void;
+    onDelete: () => void;
 }
 
 const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
@@ -20,7 +21,8 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     onAddComment,
     onAddAttachment,
     onUpdateStatus,
-    onUpdateTask
+    onUpdateTask,
+    onDelete
 }) => {
     const { t } = useTranslation();
     const [isEditing, setIsEditing] = useState(false);
@@ -96,6 +98,13 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         )}
                     </div>
                     <div className="flex items-center gap-3">
+                        <button
+                            onClick={onDelete}
+                            className="p-3 bg-red-50 text-red-500 hover:bg-red-100 rounded-2xl transition-all group"
+                            title={t('common.delete')}
+                        >
+                            <Trash2 className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                        </button>
                         <button
                             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
                             className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${isEditing ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}

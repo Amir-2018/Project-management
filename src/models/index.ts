@@ -75,6 +75,16 @@ export interface Task {
   comments: Comment[];
 }
 
+// Notification interface
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  isRead: boolean;
+  createdAt: string;
+}
+
 // Stats model interface
 export interface Stats {
   label: string;

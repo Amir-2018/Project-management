@@ -10,11 +10,17 @@ const LandingView: React.FC = () => {
         <div className="min-h-screen bg-[#F8FAFC] overflow-x-hidden font-sans">
             {/* Navbar */}
             <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100 px-8 py-4 flex justify-between items-center animate-in fade-in slide-in-from-top duration-700">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
                     <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-indigo-200">
                         <Layout className="w-6 h-6" />
                     </div>
                     <span className="text-xl font-black text-slate-800 tracking-tighter uppercase">{APP_NAME}</span>
+                </div>
+
+                <div className="hidden md:flex items-center gap-8">
+                    <button onClick={() => navigate('/about')} className="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">About</button>
+                    <button onClick={() => navigate('/services')} className="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Services</button>
+                    <button onClick={() => navigate('/contact')} className="text-[10px] font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Contact</button>
                 </div>
                 <div className="flex items-center gap-8">
                     <button onClick={() => navigate('/login')} className="text-sm font-black text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-colors">Login</button>
@@ -120,9 +126,9 @@ const LandingView: React.FC = () => {
                 </div>
                 <p className="text-slate-400 text-sm font-medium mb-10 tracking-wide">© 2026 {APP_NAME}. Crafted for excellence.</p>
                 <div className="flex justify-center gap-8 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
-                    <a href="#" className="hover:text-indigo-600 transition-colors flex items-center gap-2"><Shield className="w-3 h-3" /> Privacy</a>
-                    <a href="#" className="hover:text-indigo-600 transition-colors flex items-center gap-2"><Zap className="w-3 h-3" /> Terms</a>
-                    <a href="#" className="hover:text-indigo-600 transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> Contact</a>
+                    <button onClick={() => navigate('/about')} className="hover:text-indigo-600 transition-colors flex items-center gap-2"><Users className="w-3 h-3" /> About</button>
+                    <button onClick={() => navigate('/services')} className="hover:text-indigo-600 transition-colors flex items-center gap-2"><Zap className="w-3 h-3" /> Services</button>
+                    <button onClick={() => navigate('/contact')} className="hover:text-indigo-600 transition-colors flex items-center gap-2"><Globe className="w-3 h-3" /> Contact</button>
                 </div>
             </footer>
 

@@ -6,11 +6,11 @@ import { Task, TaskStatus, Member } from '../models';
 interface CreateTaskModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (task: Omit<Task, 'id' | 'projectId'>) => void;
+    onSubmit: (task: Omit<Task, 'id' | 'projectId'>) => void;
     members: Member[];
 }
 
-const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSave, members }) => {
+const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSubmit, members }) => {
     const { t } = useTranslation();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -23,7 +23,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose, onSa
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const member = members.find(m => m.id === assigneeId);
-        onSave({
+        onSubmit({
             title,
             description,
             priority,

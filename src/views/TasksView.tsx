@@ -3,6 +3,7 @@ import { ArrowLeft, MoreVertical, MessageSquare, Paperclip, Plus, Layout } from 
 import { useTranslation } from 'react-i18next';
 import { Task, TaskStatus } from '../models';
 import TaskDetailModal from './TaskDetailModal';
+import ConfirmModal from './ConfirmModal';
 
 interface TasksViewProps {
     tasks: Task[];
@@ -11,6 +12,7 @@ interface TasksViewProps {
     onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
     onAddComment: (taskId: string, text: string) => void;
     onAddAttachment: (taskId: string, file: File) => void;
+    onDeleteTask: (taskId: string) => void;
     onBack: () => void;
 }
 
@@ -21,10 +23,12 @@ const TasksView: React.FC<TasksViewProps> = ({
     onUpdateTask,
     onAddComment,
     onAddAttachment,
+    onDeleteTask,
     onBack
 }) => {
     const { t } = useTranslation();
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
     const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
     const [dropTargetStatus, setDropTargetStatus] = useState<TaskStatus | null>(null);
 
@@ -190,9 +194,24 @@ const TasksView: React.FC<TasksViewProps> = ({
                         onAddAttachment={(file) => onAddAttachment(selectedTask.id, file)}
                         onUpdateStatus={(status) => onUpdateStatus(selectedTask.id, status)}
                         onUpdateTask={(updates) => onUpdateTask(selectedTask.id, updates)}
+                        onDelete={() => setTaskToDelete(selectedTask)}
                     />
                 )
             }
+
+            <ConfirmModal
+                isOpen={!!taskToDelete}
+                onClose={() => setTaskToDelete(null)}
+                onConfirm={() => {
+                    if (taskToDelete) {
+                        onDeleteTask(taskToDelete.id);
+                        setTaskToDelete(null);
+                        setSelectedTask(null);
+                    }
+                }}
+                title={t('modals.confirm.title')}
+                message={t('modals.confirm.delete_task', { title: taskToDelete?.title })}
+            />
         </div >
     );
 };

@@ -12,7 +12,10 @@
     },
     "dashboard": {
         "title": "Strategy Board",
-        "subtitle": "High-level overview of your project ecosystem."
+        "subtitle": "High-level overview of your project ecosystem.",
+        "notifications": "Notifications",
+        "mark_all_read": "Mark all as read",
+        "no_notifications": "No new notifications"
     },
     "projects": {
         "title": "Project Collections",
@@ -126,6 +129,13 @@
             "placeholder": "Write a message...",
             "post": "Post Comment",
             "save_changes": "Save Changes"
+        },
+        "confirm": {
+            "title": "Are you sure?",
+            "delete_project": "This will permanently delete the project \"{{name}}\" and all its associated tasks.",
+            "delete_task": "This will permanently delete the task \"{{title}}\".",
+            "cancel": "Cancel",
+            "delete": "Delete"
         }
     }
 }
