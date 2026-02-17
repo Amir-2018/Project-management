@@ -163,13 +163,15 @@ const LoginView: React.FC = () => {
             )}
 
             <div className="space-y-2">
-              <label htmlFor="username" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Access Username</label>
+              <label htmlFor="username" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">
+                {isLogin ? 'Email Address' : 'Access Username'}
+              </label>
               <input
-                type="text"
+                type={isLogin ? "email" : "text"}
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="administrator"
+                placeholder={isLogin ? "admin@example.com" : "administrator"}
                 autoComplete="username"
                 className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-600 transition-all placeholder:text-slate-300 shadow-inner"
               />

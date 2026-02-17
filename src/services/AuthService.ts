@@ -13,7 +13,7 @@ export class AuthService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: credentials.username, // backend expects email
+          email: credentials.username, // User enters email in username field
           password: credentials.password,
         }),
       });
@@ -37,21 +37,6 @@ export class AuthService {
 
       return { user, token: data.token };
     } catch (error: any) {
-      // Fallback to default admin for development
-      if (credentials.username === 'admin' && credentials.password === 'admin') {
-        const user: User = {
-          username: 'admin',
-          email: 'admin@example.com',
-          avatar: 'A',
-          role: 'Admin',
-        };
-
-        const token = btoa(JSON.stringify({ username: credentials.username, role: user.role, timestamp: Date.now() }));
-        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-        return { user, token };
-      }
-
       throw new Error(error.message || 'Invalid credentials');
     }
   }
